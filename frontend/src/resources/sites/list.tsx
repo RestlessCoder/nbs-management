@@ -1,7 +1,7 @@
 import { useTable, useParsed } from "@refinedev/core";
 import { type Sites } from "../../types";
 import { formatNumber } from "../../utils"
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 
 const SitesList = () => {   
     const { params } = useParsed();
