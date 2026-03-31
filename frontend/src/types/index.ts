@@ -20,3 +20,9 @@ export type ListResponse<T = unknown> = {
         totalPages: number;
     }
 }
+
+export type DynamicNavFilterProps = {
+    resource: string;
+    activeValue?: string;
+    onSortChange?: (field: string) => void;
+}

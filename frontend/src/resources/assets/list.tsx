@@ -1,32 +1,94 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { type Assets } from "../../types/index.ts";
+import { DynamicNavFilter } from "../../components/DynamicNavFilter.tsx";
 
-import { useList, useMany, useTable } from "@refinedev/core";
+import { useList, useMany, useParsed, useTable } from "@refinedev/core";
 
 const AssetsList = () => {      
+    const { params } = useParsed();
+    const searchFromUrl = params?.search;
+    const [filterValue, setFilterValue] = useState("");
     const [tableLoading, setTableLoading] = useState(true);
     const [userHasInteracted, setUserHasInteracted] = useState(false);
 
-    const { 
+        const { 
         result: { data: assetsData, total },
         tableQuery: { isError , isLoading, error, refetch },
         currentPage,
         setCurrentPage,
         pageSize,
+        setSorters, 
+        sorters,
+        filters,
+        setFilters,
     } = useTable<Assets>({
         resource: "assets",
         pagination: {
             mode: "server",
             currentPage: 1,
             pageSize: 10,
-        }
+        },
+        // REMOVE initial sorters and filters to keep URL clean
+        sorters: {
+            initial: []
+        },
+        filters: {
+            initial: []
+        },
+        syncWithLocation: userHasInteracted,
     })
+
+    // Identify which field is currently sorted to highlight the tab
+    const currentSortField = sorters?.[0]?.field as any;
+
+    const handleSortAction = (field: string) => {
+        // Determine order: Years usually look better Newest -> Oldest (desc)
+        // Strings (Type/Name) usually look better A -> Z (asc)
+        const order = (field === "year" || field === "createdAt") ? "desc" : "asc";
+
+        //console.log(field)
+        setSorters([{ field, order }]);
+    };
 
     const siteIds = useMemo(() => {
         const ids = assetsData?.map((asset) => asset.siteId) ?? [];
         return [...new Set(ids)]; // Removes duplicates
     }, [assetsData]);
 
+     // Get all years value in assets db
+    const { 
+        result: { data: assetYearsData }
+    } = useList({
+        resource: "assets",
+        pagination: { mode: "off" }, 
+        queryOptions: {
+            select: (result) => {
+                // 1. Get unique years
+                const uniqueYears = [...new Set(result.data.map((a) => a.year).filter(Boolean))];
+                
+                // 2. Return the shape Refine expects
+                return {
+                    data: uniqueYears.sort((a, b) => a - b),
+                    total: uniqueYears.length,
+                };
+            },
+        },
+    });
+
+    const dynamicYears = assetYearsData ?? [];
+    
+    const handleYearChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+            setFilterValue(value);
+
+            setFilters([
+                {
+                    field: "year",
+                    operator: "eq",
+                    value: value === "all" ? undefined : value,
+                },
+            ], "replace"); // "replace" ensures we don't stack multiple year filters
+    };
 
     // Relation DB Site 
     const { 
@@ -67,6 +129,31 @@ const AssetsList = () => {
             return () => clearTimeout(timer);
         }
     }, [isLoading]);
+
+     // First load to keep the URL params clean
+    useEffect(() => {
+        const isNotInitialState = currentPage > 1 || filters.length > 0 || sorters.length > 0;
+
+        if (isNotInitialState) {
+            setUserHasInteracted(true);
+        }
+    }, [currentPage, filters, sorters]);
+    
+     // SEARCH SYNC FROM URL
+    useEffect(() => {
+        setFilters(
+            [
+                {
+                field: "search",
+                operator: "contains",
+                value: searchFromUrl || undefined,
+                },
+            ],"merge"
+        );
+
+        setCurrentPage(1); // reset page when searching
+    }, [searchFromUrl]);
+
     
 
     //console.log(assetsData)
@@ -76,12 +163,29 @@ const AssetsList = () => {
             <section className="jobs-section table-container">
                 <div className="grid-x grid-padding-x">
                     <div className="cell small-12 medium-8 large-8 xlarge-9 mb--20">
-                     
-
+                        <DynamicNavFilter 
+                            resource="assets"
+                            activeValue={currentSortField} 
+                            onSortChange={(field) => handleSortAction(field || "")}
+                        />
                     </div>
                     <div className="cell small-12 medium-4 large-4 xlarge-3 text-right mb--20">
                         <div className="filter-form-select">
-                        
+                            <form id="filter">
+                                <select 
+                                    className="filter-select filter-select--min-width150" 
+                                    name="filter"
+                                    value={filterValue}
+                                    onChange={handleYearChange}
+                                >
+                                    <option value="all">All</option>
+                                        {dynamicYears.map((year) => (
+                                            <option key={year} value={year}>
+                                                {year}
+                                            </option>
+                                        ))}
+                                </select>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -129,8 +233,8 @@ const AssetsList = () => {
 
                                                     const site = allSite.find((s) => s.data.id === asset.siteId);
                                                     
-                                                    console.log("Found " , site?.data.code)
-                                                    console.log("This is site", allSite.map((item) => item.data.id))
+                                                    //console.log("Found " , site?.data.code)
+                                                    //console.log("This is site", allSite.map((item) => item.data.id))
                                                     return (
                                                         <tr key={asset.id}>
                                                             <td className="assets-table__cell asset-name">{asset.name}</td>

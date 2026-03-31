@@ -13,6 +13,7 @@ import { prisma } from "../../lib/prisma.ts";
 const router = express.Router();
 
 // Get all Assets with optional search, filtering and pagination
+// Get all Assets with optional search, filtering and pagination
 router.get("/", async (req, res) => {
     const { 
         page = 1, 

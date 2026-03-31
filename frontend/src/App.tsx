@@ -13,6 +13,7 @@ import SitesList from "./resources/sites/list.tsx";
 import UsersList from "./resources/users/list.tsx";
 
 import SidebarNav from "./components/SidebarNav.tsx";
+import TopSearchBar from "./components/TopSearchBar.tsx";
 
 import { Refine } from "@refinedev/core";
 import routerProvider, { 
@@ -22,14 +23,13 @@ import routerProvider, {
 
 import { dataProvider } from "./providers/data.ts";
 
-
 const AppLayout = () => {
   return (
     <main className="page-body">
         <div className="block-container">
           <SidebarNav />
           <div className="main-body-right">
-
+            <TopSearchBar />
             <Outlet />
           </div>
         </div>
