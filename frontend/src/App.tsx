@@ -5,6 +5,9 @@ import {
   Outlet 
 } from "react-router";
 import './App.css'
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import $ from 'jquery';
+import 'foundation-sites';
 
 import DashboardPage from "./pages/DashboardPage.tsx";
 import AssetsList from "./resources/assets/list.tsx";
@@ -22,6 +25,7 @@ import routerProvider, {
 } from "@refinedev/react-router";
 
 import { dataProvider } from "./providers/data.ts";
+import { useEffect } from "react";
 
 const AppLayout = () => {
   return (
@@ -37,6 +41,11 @@ const AppLayout = () => {
   )
 };
 function App() {
+
+  useEffect(() => {
+    $(document).foundation();
+  }, []);
+
 
   return (
     <BrowserRouter>
