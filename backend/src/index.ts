@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import assetsRouter from "./routes/assetsRoute.ts";
+import assetsSiteRouter from "./routes/assetsSite.ts";
 
 
 const app = express();
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
     res.send("Welcome to NBS Management System");
 });
 
+app.use("/api/sites", assetsSiteRouter);
 app.use("/api/assets", assetsRouter);
 
 app.listen(PORT, () => {

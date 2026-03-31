@@ -6,6 +6,16 @@ const options: CreateDataProviderOptions = {
     getList: {
         getEndpoint: ({ resource }) => resource,
 
+          buildQueryParams: async ({ pagination }) => {
+
+            const { currentPage = 1, pageSize = 10 } = pagination ?? {};
+
+            return {
+                page: currentPage,
+                limit: pageSize,
+            };
+        },
+
     
         mapResponse: async (response) => {
             const clonedResponse = response.clone(); 
