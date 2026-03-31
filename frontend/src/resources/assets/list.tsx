@@ -11,7 +11,7 @@ const AssetsList = () => {
     const [tableLoading, setTableLoading] = useState(true);
     const [userHasInteracted, setUserHasInteracted] = useState(false);
 
-        const { 
+    const { 
         result: { data: assetsData, total },
         tableQuery: { isError , isLoading, error, refetch },
         currentPage,

@@ -6,3 +6,6 @@ export const capitalizeString = (str: string) => {
         .replace(/^./, (s) => s.toUpperCase()); // Capitalize first letter
 };
 
+export const formatNumber = (num : number) => {
+  return Number(num).toLocaleString();
+};

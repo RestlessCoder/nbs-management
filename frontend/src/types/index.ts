@@ -11,6 +11,19 @@ export type Assets = {
     updatedAt: string;
 }
 
+export type Sites = {
+    id: number;
+    name: string;
+    code: string;
+    location: string;
+    entity: string;
+    category: string;
+    createdAt: string;
+    budget: number;
+    isFavorite: boolean;
+    updatedAt: string;
+}
+
 export type ListResponse<T = unknown> = {
     data?: T[];
     pagination?: {
