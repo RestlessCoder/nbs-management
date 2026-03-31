@@ -25,5 +25,5 @@ dist-ssr
 .env
 
 # Ignore Prisma generated client
-backend/generated/
-backend/node_modules
+generated
+

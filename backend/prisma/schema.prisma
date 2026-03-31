@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["public"]
+}
+
+model Asset {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(255)
+  type         String    @db.VarChar(255)
+  siteId       Int?      @map("site_id")
+  manufacturer String    @db.VarChar(500)
+  year         Int
+  quickFixes   Int       @map("quick_fixes")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+  site         Site?     @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  jobs         jobs[]
+
+  @@index([siteId])
+  @@map("assets")
+  @@schema("public")
+}
+
+model Site {
+  id         Int       @id @default(autoincrement())
+  code       String    @unique @db.VarChar(50)
+  name       String    @db.VarChar(255)
+  location   String    @db.VarChar(255)
+  entity     String
+  category   String
+  budget     Float
+  isFavorite Boolean   @default(false) @map("is_favorite")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+  assets     Asset[]
+  jobs       jobs[]
+
+  @@map("sites")
+  @@schema("public")
+}
+
+model jobs {
+  id          Int       @id @default(autoincrement())
+  reference   Int
+  description String    @db.VarChar(500)
+  cost        Float
+  status      Status    @default(PENDING)
+  site_id     Int?
+  asset_id    Int?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime?
+  assets      Asset?    @relation(fields: [asset_id], references: [id])
+  sites       Site?     @relation(fields: [site_id], references: [id])
+
+  @@index([asset_id])
+  @@index([site_id])
+  @@schema("public")
+}
+
+enum ProfileImage {
+  GUY
+  GIRL
+  NEUTRAL
+
+  @@schema("public")
+}
+
+enum Role {
+  USER
+  ADMIN
+
+  @@schema("public")
+}
+
+enum Status {
+  PENDING
+  CLOSED_NOT_AS_REPORTED
+  HOLDING_TANK
+  CONTRACT_ON_SITE
+  CONTRACT_VISIT_ARRANGED
+  CONTRACTOR_FINISHED
+  COMPLETE_AS_REPORTED
+  JOB_APPROVED
+  LOGGED_WITH_NBS
+
+  @@schema("public")
+}
