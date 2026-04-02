@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["public"]
 }
 
 model Asset {
@@ -19,11 +18,10 @@ model Asset {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime? @updatedAt @map("updated_at")
   site         Site?     @relation(fields: [siteId], references: [id], onDelete: Restrict)
-  jobs         jobs[]
+  jobs         Job[]
 
   @@index([siteId])
   @@map("assets")
-  @@schema("public")
 }
 
 model Site {
@@ -37,44 +35,57 @@ model Site {
   isFavorite Boolean   @default(false) @map("is_favorite")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime? @updatedAt @map("updated_at")
+  user       User[]
   assets     Asset[]
-  jobs       jobs[]
+  jobs       Job[]
 
   @@map("sites")
-  @@schema("public")
 }
 
-model jobs {
+model Job {
   id          Int       @id @default(autoincrement())
   reference   Int
   description String    @db.VarChar(500)
   cost        Float
   status      Status    @default(PENDING)
-  site_id     Int?
-  asset_id    Int?
-  created_at  DateTime  @default(now())
-  updated_at  DateTime?
-  assets      Asset?    @relation(fields: [asset_id], references: [id])
-  sites       Site?     @relation(fields: [site_id], references: [id])
+  siteId      Int?      @map("site_id")
+  assetId     Int?      @map("asset_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  asset       Asset?    @relation(fields: [assetId], references: [id])
+  site        Site?     @relation(fields: [siteId], references: [id])
 
-  @@index([asset_id])
-  @@index([site_id])
-  @@schema("public")
+  @@index([siteId])
+  @@index([assetId])
+  @@map("jobs")
 }
+
+model User {
+  id        Int          @id @default(autoincrement())
+  email     String       @unique
+  name      String       @db.VarChar(255)
+  password  String        @db.VarChar(255)
+  role      Role         @default(USER)
+  imageType ProfileImage @default(GUY)
+  siteId    Int?         @map("site_id")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Site      Site?        @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("users")
+}
+
 
 enum ProfileImage {
   GUY
   GIRL
   NEUTRAL
-
-  @@schema("public")
 }
 
 enum Role {
   USER
   ADMIN
-
-  @@schema("public")
 }
 
 enum Status {
@@ -87,6 +98,4 @@ enum Status {
   COMPLETE_AS_REPORTED
   JOB_APPROVED
   LOGGED_WITH_NBS
-
-  @@schema("public")
 }

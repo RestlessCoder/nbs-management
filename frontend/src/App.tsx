@@ -2,7 +2,8 @@ import {
   BrowserRouter, 
   Routes, 
   Route, 
-  Outlet 
+  Outlet, 
+  Navigate
 } from "react-router";
 import './App.css'
 
@@ -15,13 +16,16 @@ import UsersList from "./resources/users/list.tsx";
 import SidebarNav from "./components/SidebarNav.tsx";
 import TopSearchBar from "./components/TopSearchBar.tsx";
 
-import { Refine } from "@refinedev/core";
+import { Refine, Authenticated } from "@refinedev/core";
 import routerProvider, { 
   UnsavedChangesNotifier, 
   DocumentTitleHandler 
 } from "@refinedev/react-router";
 
 import { dataProvider } from "./providers/data.ts";
+import { authProvider } from "./providers/auth.ts";
+
+import LoginPage from "./pages/Login.tsx";
 
 const AppLayout = () => {
   return (
@@ -43,6 +47,7 @@ function App() {
     <Refine
           dataProvider={dataProvider}
           routerProvider={routerProvider}
+          authProvider={authProvider}
             resources={[
               {
                 name: "dashboard",
@@ -96,16 +101,34 @@ function App() {
             ]}
         >
         <Routes>
-              <Route element={
-                <AppLayout />
+            <Route element={
+                <Authenticated 
+                    redirectOnFail="/login"
+                    key={""}
+                >
+                    <AppLayout />
+                </Authenticated>
               }
-            >
+            > 
+              
+              {/* Protected Routes */}
               <Route path="/" element={<DashboardPage />} />
               <Route path="/jobs" element={<JobsList />} />
               <Route path="/assets" element={<AssetsList/>} />
               <Route path="/sites" element={<SitesList />} />
               <Route path="/users" element={<UsersList />} />
             </Route>
+            
+            {/* Public Routes */}
+            <Route
+              path="/login"
+              element={
+                <Authenticated fallback={<LoginPage />} key={""}>
+                  <Navigate to="/" />
+                </Authenticated>
+             }
+            />
+              
             <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>      
         <UnsavedChangesNotifier />
