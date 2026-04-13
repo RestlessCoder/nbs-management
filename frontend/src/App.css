@@ -199,8 +199,13 @@ html, body {
     fill: currentColor;
 }
 
+.error-text { color: #ff0000; display:block; margin-top:0.5rem; font-size:0.85rem; }
 /* Overwrite */
+.btn.sign-in { margin-top:1.75rem; }
+.generic-label { margin-top:1rem; }
 .table-container .filter-form-select .filter-select--min-width195 { max-width:195px; }
+.generic-input { margin-bottom:0; }
+.generic-input.email { margin-bottom:0; }
 
 @media screen and (max-width: 89.9988em) {
     .top-dashboard-bar .user-details {

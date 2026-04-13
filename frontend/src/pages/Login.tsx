@@ -3,23 +3,53 @@ import brandLogo from "../assets/images/brand-logo.svg";
 import { GridIcon, ListIcon, BoltIcon, UsersIcon } from "../assets/images";
 import { useLogin } from "@refinedev/core";
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "@refinedev/react-hook-form";
+import { LoginSchema, type LoginFormValues } from "../lib/validation";
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const LoginPage = () => {
-    const { mutate: login, isLoading } = useLogin();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const { mutateAsync: login } = useLogin();
+    const [isLoading, setIsLoading] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
 
-    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>): Promise<void> => {
-        e.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(LoginSchema),
+        mode: "onChange", // Optional: validates as they type
+    });
 
-        login({ email, password });
+      
+    // 3. The Submit Handler
+    const onSubmit = async (data: LoginFormValues) => {
+        setIsLoading(true);
+
+        try {
+
+            const result = await login({ 
+                email: data.email, 
+                password: data.password
+            });
+
+            if (result.success === false && result.error) setServerError(result.error.message);
+        
+
+            // console.log(result); 
+        } finally {
+            setIsLoading(false);
+        }
+
     };
 
     return (
@@ -67,19 +97,25 @@ const LoginPage = () => {
                             </div>
                            
                             <div className="login__field">
+                          
+                                {serverError != null && (
+                                    <div style={{ color: '#ff0000' }}>
+                                        {serverError}
+                                    </div>
+                                )}
                                 <form 
                                     className="login__field" 
-                                    onSubmit={handleSubmit}>
-                                
+                                    onSubmit={handleSubmit(onSubmit)}
+                                >                              
                                     <label className="generic-label" htmlFor="email">Email</label>
                                     <input  
                                         id="email"
                                         type="email"
                                         className="generic-input email"
                                         placeholder="Enter Email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        {...register("email")}
                                     />
+                                    {errors.email && <span className="error-text">{errors.email.message}</span>}
                                     <label className="generic-label" htmlFor="password">Password</label>
                                     <div className="password">
                                         <input  
@@ -87,18 +123,19 @@ const LoginPage = () => {
                                             className="generic-input"
                                             placeholder="Enter Password"
                                             type={showPassword ? "text" : "password"}
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            {...register("password")}
                                         />
                                         <span 
                                             className="toggle-password" 
                                             onClick={togglePasswordVisibility}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                        <i className={`toggle-password-icon fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                        <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                                         </span>
                                     </div>
+                                    {errors.password && <span className="error-text">{errors.password.message}</span>}
                                     <button 
+                                        type="submit"
                                         className="btn btn--primary sign-in" disabled={isLoading}>
                                         {isLoading ? "Signing in..." : "Sign In"}
                                     </button>

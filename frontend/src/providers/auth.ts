@@ -14,20 +14,21 @@ export const authProvider: AuthProvider = {
       body: JSON.stringify({ email, password }),
     });
 
-
     //const text = await res.text();
     //console.log("Raw response:", text);
-
+    
     if (!res.ok) {
       const error = await res.json();
+
+      // Log the error from server
       return {
         success: false,
-        error: new Error(error.message || "Login failed"),
+        error: { message: error?.message || "Login failed" },
       };
     }
 
     // If login is successful, we can set a flag in localStorage
-    if (res.ok) localStorage.setItem("is_logged_in", "true");
+    if (res.ok && res.status === 200) localStorage.setItem("is_logged_in", "true");
 
     return {
       success: true,
@@ -37,7 +38,7 @@ export const authProvider: AuthProvider = {
 
   logout: async () => {
     localStorage.removeItem("is_logged_in");
-    
+
     await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
@@ -89,9 +90,14 @@ export const authProvider: AuthProvider = {
   },
 
   onError: async (error: any) => {
-    if (error?.status === 401) {
-      return { logout: true };
+    if (error?.status === 401 || error?.statusCode === 401) {
+      return { 
+        logout: true, 
+        redirectTo: "/login",
+        error: new Error("Session expired. Please login again.") 
+      };
     }
-    return {};
+
+    return { error };
   },
 };
