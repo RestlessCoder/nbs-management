@@ -26,6 +26,7 @@ import { dataProvider } from "./providers/data.ts";
 import { authProvider } from "./providers/auth.ts";
 
 import LoginPage from "./pages/Login.tsx";
+import RegisterPage from "./pages/Register.tsx";
 
 const AppLayout = () => {
   return (
@@ -124,6 +125,16 @@ function App() {
               path="/login"
               element={
                 <Authenticated fallback={<LoginPage />} key={""}>
+                  <Navigate to="/" />
+                </Authenticated>
+             }
+            />
+
+            {/* Protected Routes for Admin */}
+            <Route
+              path="/register"
+              element={
+                <Authenticated fallback={<RegisterPage />} key={""}>
                   <Navigate to="/" />
                 </Authenticated>
              }

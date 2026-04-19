@@ -200,12 +200,24 @@ html, body {
 }
 
 .error-text { color: #ff0000; display:block; margin-top:0.5rem; font-size:0.85rem; }
+.cursor-pointer { cursor:pointer; }
+.font-bold { font-weight:600; }
+
+.radio-group { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1rem; max-width:375px; text-align:left; margin:0 auto; }
+.radio-group label { display:flex; align-items:center; margin-right:1rem; }
+.radio-group input[type="radio"] { margin-bottom:0; }
+.gender-label { max-width:375px; margin:0 auto; text-align:left; }
+
 /* Overwrite */
 .btn.sign-in { margin-top:1.75rem; }
-.generic-label { margin-top:1rem; }
+.generic-label { margin-top:1rem; display:block; }
 .table-container .filter-form-select .filter-select--min-width195 { max-width:195px; }
 .generic-input { margin-bottom:0; }
 .generic-input.email { margin-bottom:0; }
+
+.login-section.register .error-text { margin:0.35rem auto; max-width:375px; text-align:left; }
+.login-section.register .block__container { width:100%; justify-content:center; }
+.login-section.register .block__content { position:relative; top:unset; transform:unset; padding-top:5rem; padding-bottom:2.5rem; }
 
 @media screen and (max-width: 89.9988em) {
     .top-dashboard-bar .user-details {

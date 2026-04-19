@@ -23,7 +23,10 @@ export const authProvider: AuthProvider = {
       // Log the error from server
       return {
         success: false,
-        error: { message: error?.message || "Login failed" },
+        error: { 
+          message: error?.message || "Login failed",
+          statusCode: res.status,
+        },
       };
     }
 
@@ -33,6 +36,33 @@ export const authProvider: AuthProvider = {
     return {
       success: true,
       redirectTo: "/",
+    };
+  },
+
+  register: async ({ email, password, name, gender, siteId }: { email: string; password: string; name: string; gender: string, siteId: number }) => {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name, gender, siteId }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      return {
+        success: false,
+        error: { message: error?.message || "Registration failed", statusCode: res.status },
+      };
+    }
+
+    return { 
+      success: true, 
+      redirectTo: "/login?registered=true", 
+      successNotification: {
+          message: "Registration successful",
+          description: "Please log in with your account",
+          type: "success",
+      },
     };
   },
 
@@ -73,7 +103,7 @@ export const authProvider: AuthProvider = {
   },
 
   getIdentity: async () => {
-    const res = await fetch(`${API_URL}/me`, {
+    const res = await fetch(`${API_URL}/auth/me`, {
       credentials: "include",
     });
 

@@ -2,13 +2,14 @@ import bgRedImage from "../assets/images/red-bg.png";
 import brandLogo from "../assets/images/brand-logo.svg";
 import { GridIcon, ListIcon, BoltIcon, UsersIcon } from "../assets/images";
 import { useLogin } from "@refinedev/core";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
 import { LoginSchema, type LoginFormValues } from "../lib/validation";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { useLocation } from "react-router";
 
 const LoginPage = () => {
 
@@ -16,6 +17,9 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    const location = useLocation();
+    const registered = new URLSearchParams(location.search).get("registered");
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -51,6 +55,12 @@ const LoginPage = () => {
         }
 
     };
+
+    useEffect(() => {       
+        if (registered === "true") {
+            setServerError("Registration successful! Please log in.");
+        }
+    }, [registered]);
 
     return (
         <main className="page-body">

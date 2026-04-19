@@ -6,9 +6,10 @@ import { prisma } from "../../lib/prisma.ts";
 const router = express.Router();  
 
 // Register user
-router.post("/register", requireRole(["user", "admin"]), signUp);
+router.post("/register", signUp);
 
-// Login user 
+// PUBLIC: No middleware. 
+// This allows the user to send their email/password and GET a token. 
 router.post("/login", signIn);
 
 // Me
@@ -17,7 +18,7 @@ router.get("/me", requireAuth, async (req, res) => {
   // If the middleware didn't find a user, return a guest response immediately
   if (!req.user) return res.json({ authenticated: false, user: null });
   
-  const userInfo = await prisma.user.findFirst({ where: { email: req.user?.email } });
+  const userInfo = await prisma.user.findFirst({ where: { id: req.user?.id } });
 
   if (!userInfo) {
     return res.status(404).json({ message: "User not found" });
