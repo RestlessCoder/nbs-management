@@ -16,7 +16,7 @@ import UsersList from "./resources/users/list.tsx";
 import SidebarNav from "./components/SidebarNav.tsx";
 import TopSearchBar from "./components/TopSearchBar.tsx";
 
-import { Refine, Authenticated } from "@refinedev/core";
+import { Refine, Authenticated, CanAccess } from "@refinedev/core";
 import routerProvider, { 
   UnsavedChangesNotifier, 
   DocumentTitleHandler 
@@ -27,6 +27,7 @@ import { authProvider } from "./providers/auth.ts";
 
 import LoginPage from "./pages/Login.tsx";
 import RegisterPage from "./pages/Register.tsx";
+import { accessControlProvider } from "./providers/access.ts";
 
 const AppLayout = () => {
   return (
@@ -48,6 +49,7 @@ function App() {
     <Refine
           dataProvider={dataProvider}
           routerProvider={routerProvider}
+          accessControlProvider={accessControlProvider}
           authProvider={authProvider}
             resources={[
               {
@@ -134,8 +136,17 @@ function App() {
             <Route
               path="/register"
               element={
-                <Authenticated fallback={<RegisterPage />} key={""}>
-                  <Navigate to="/" />
+                <Authenticated 
+                  redirectOnFail="/login" 
+                  key={""}
+                >
+                  <CanAccess 
+                    action="create"
+                    resource="register"
+                    fallback={<Navigate to="/login" />}
+                  >
+                    <RegisterPage />
+                  </CanAccess>
                 </Authenticated>
              }
             />

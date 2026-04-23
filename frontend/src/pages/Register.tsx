@@ -1,6 +1,6 @@
 import brandLogo from "../assets/images/brand-logo.svg";
 import { Link, useList, useRegister } from "@refinedev/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
 import { RegisterSchema, type RegisterFormValues } from "../lib/validation";
@@ -12,6 +12,7 @@ const RegisterPage = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const {
         register,
@@ -26,22 +27,25 @@ const RegisterPage = () => {
     const onSubmit = async (data: RegisterFormValues) => {
         setIsLoading(true);
 
-        console.log("Form Data:", data); // Debug: Check form data before submission
-
         try {
 
             const result = await registerUser({
                 email: data.email,
                 password: data.password,
                 name: data.fullName,
-                siteId: Number(data.site),
+                siteId: data.siteId,
                 gender: data.gender,
+                isVerified: false,
+                verificationToken: null,
                 role: "USER",
             });
 
-            if (result.success === false && result.error) setServerError(result.error.message);        
-
-             console.log(result); 
+            if (result.success === false && result.error) {
+                setServerError(result.error.message);       
+            } else {
+                localStorage.setItem("registerMessage", "Registration successful! Please check your email to verify your account.");           
+            }
+       
         } catch (error: any) {
             console.error("Registration Error:", error);
             setServerError(error.message || "An unexpected error occurred");
@@ -50,7 +54,15 @@ const RegisterPage = () => {
         }
 
     };
-
+    
+    useEffect(() => {
+        const msg = localStorage.getItem("registerMessage");
+        
+        if (msg) {
+            setSuccessMessage(msg);
+            localStorage.removeItem("registerMessage");
+        }
+    }, []);
 
     // Get all site value in assets db
     const { 
@@ -85,14 +97,19 @@ const RegisterPage = () => {
                             <div className="logo">
                                 <img src={brandLogo} alt="brand logo" />
                             </div>
-                           
+
+                            {serverError != null && (
+                                <div style={{ color: '#ff0000' }}>
+                                    {serverError}
+                                </div>
+                            )} 
+
+                            {successMessage != null && (
+                                <div style={{ color: '#008000' }}>
+                                    {successMessage}
+                                </div>
+                            )}
                             <div className="login__field">
-                          
-                                {serverError != null && (
-                                    <div style={{ color: '#ff0000' }}>
-                                        {serverError}
-                                    </div>
-                                )}
                                 <form 
                                     className="login__field" 
                                     onSubmit={handleSubmit(onSubmit)}
@@ -139,11 +156,11 @@ const RegisterPage = () => {
                                     />
                                     {errors.confirmPassword && <span className="error-text">{errors.confirmPassword.message}</span>}
                                     
-                                    <label className="generic-label" htmlFor="site">Site</label>
+                                    <label className="generic-label" htmlFor="siteId">Site</label>
                                     <select 
                                         className="generic-input email" 
-                                        id="site"
-                                        {...register("site")}
+                                        id="siteId"
+                                        {...register("siteId", { valueAsNumber: true })}
                                     >
                                         <option value="">Select Site</option>
                                         {dynamicSites.map((site) => (
@@ -152,7 +169,7 @@ const RegisterPage = () => {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.site && <span className="error-text">{errors.site.message}</span>}
+                                    {errors.siteId && <span className="error-text">{errors.siteId.message}</span>}
 
                                    <span className="generic-label">Gender</span>  
                                    <div className="radio-group">  

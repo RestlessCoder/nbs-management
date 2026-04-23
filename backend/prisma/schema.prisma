@@ -35,9 +35,9 @@ model Site {
   isFavorite Boolean   @default(false) @map("is_favorite")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime? @updatedAt @map("updated_at")
-  user       User[]
   assets     Asset[]
   jobs       Job[]
+  user       User[]
 
   @@map("sites")
 }
@@ -61,21 +61,22 @@ model Job {
 }
 
 model User {
-  id        Int          @id @default(autoincrement())
-  email     String       @unique
-  name      String       @db.VarChar(255)
-  password  String        @db.VarChar(255)
-  role      Role         @default(USER)
-  gender    Gender       @default(GUY)        
-  siteId    Int?         @map("site_id")
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  Site      Site?        @relation(fields: [siteId], references: [id])
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  name              String   @db.VarChar(255)
+  password          String   @db.VarChar(255)
+  role              Role     @default(USER)
+  siteId            Int?     @map("site_id")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  gender            Gender   @default(GUY)
+  isVerified        Boolean  @default(false)
+  verificationToken String?
+  site              Site?    @relation(fields: [siteId], references: [id])
 
   @@index([siteId])
   @@map("users")
 }
-
 
 enum Gender {
   GUY

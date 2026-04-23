@@ -1,16 +1,18 @@
 import express from "express";
-import { signIn, signUp, signOut } from "../../controllers/auth.controller.ts";
+import { signIn, signUp, signOut, verifyEmail } from "../../controllers/auth.controller.ts";
 import { requireAuth, requireRole } from "../middleware/auth.ts";
 import { prisma } from "../../lib/prisma.ts";
 
 const router = express.Router();  
 
 // Register user
-router.post("/register", signUp);
+router.post("/register", requireAuth, signUp);
 
 // PUBLIC: No middleware. 
 // This allows the user to send their email/password and GET a token. 
 router.post("/login", signIn);
+
+router.get("/verify-email", verifyEmail);
 
 // Me
 router.get("/me", requireAuth, async (req, res) => {

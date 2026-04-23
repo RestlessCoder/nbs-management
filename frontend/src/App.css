@@ -199,7 +199,7 @@ html, body {
     fill: currentColor;
 }
 
-.error-text { color: #ff0000; display:block; margin-top:0.5rem; font-size:0.85rem; }
+.error-text { max-width:375px; margin-left:auto; margin-right:auto; text-align:left; color: #ff0000; display:block; margin-top:0.325rem; font-size:0.85rem; }
 .cursor-pointer { cursor:pointer; }
 .font-bold { font-weight:600; }
 

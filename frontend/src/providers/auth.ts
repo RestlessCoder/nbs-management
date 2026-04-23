@@ -14,9 +14,7 @@ export const authProvider: AuthProvider = {
       body: JSON.stringify({ email, password }),
     });
 
-    //const text = await res.text();
-    //console.log("Raw response:", text);
-    
+
     if (!res.ok) {
       const error = await res.json();
 
@@ -31,8 +29,13 @@ export const authProvider: AuthProvider = {
     }
 
     // If login is successful, we can set a flag in localStorage
-    if (res.ok && res.status === 200) localStorage.setItem("is_logged_in", "true");
+    if (res.ok && res.status === 200) {
+      const user = await res.json();
 
+      localStorage.setItem("is_logged_in", "true");
+      localStorage.setItem("user_role", JSON.stringify(user.user?.role) || "USER"); // Store user role for access controlsss
+
+    }
     return {
       success: true,
       redirectTo: "/",
@@ -40,6 +43,19 @@ export const authProvider: AuthProvider = {
   },
 
   register: async ({ email, password, name, gender, siteId }: { email: string; password: string; name: string; gender: string, siteId: number }) => {
+    const user = JSON.parse(localStorage.getItem("user_role") || "null");
+    
+    // Block non-admin users from registering new users
+    if (user !== "ADMIN") {
+      return {
+        success: false,
+        error: { 
+          message: "Only admins can register new users",
+          statusCode: 403,
+        },
+      };
+    }
+    
     const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       credentials: "include",
@@ -55,19 +71,31 @@ export const authProvider: AuthProvider = {
       };
     }
 
-    return { 
-      success: true, 
-      redirectTo: "/login?registered=true", 
-      successNotification: {
-          message: "Registration successful",
-          description: "Please log in with your account",
-          type: "success",
-      },
-    };
+    if (user === "ADMIN") {
+      return {
+          success: true,
+          successNotification: {
+            message: "User registered successfully",
+            description: "The new account has been created",
+            type: "success",
+          },
+      } // Admins can stay on the same page after registering a new user
+    } else {
+      return { 
+        success: true, 
+        redirectTo: "/login?registered=true", 
+        successNotification: {
+            message: "Registration successful",
+            description: "Please log in with your account",
+            type: "success",
+        },
+      };
+    }
   },
 
   logout: async () => {
     localStorage.removeItem("is_logged_in");
+    localStorage.removeItem("user_role");
 
     await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
@@ -91,6 +119,10 @@ export const authProvider: AuthProvider = {
     const res = await fetch(`${API_URL}/auth/me`, {
       credentials: "include",
     });
+
+    const user = await res.json();
+
+     localStorage.setItem("user_role", JSON.stringify(user.user?.role) || "USER"); 
 
     if (res.ok) {
       return { authenticated: true };
