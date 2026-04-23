@@ -22,6 +22,7 @@ router.get("/", async (req, res) => {
         _order = 'desc' 
     } = req.query;
     
+    
     // HANDLE useMany (Filtering by ID) 
     if (id) {
         // Convert to array in case Refine sends multiple: ?id=3&id=4
@@ -93,7 +94,23 @@ router.get("/", async (req, res) => {
 
 })
 
+/**
+ * GET /api/sites/names
+ * Handles: Fetching only the names for dropdowns 
+ */
+router.get("/names", async (req, res) => {
+   try {
+        const sites = await prisma.site.findMany({
+            select: { id: true, name: true }, 
+            orderBy: { name: "asc" },        
+        });
 
+        res.json({ data: sites });
+    } catch (error) {
+        console.error("Error fetching site names:", error);
+        res.status(500).json({ error: "Failed to fetch site names" });
+    }
+})
 
 /**
  * GET /api/sites/:id

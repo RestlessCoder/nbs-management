@@ -68,7 +68,7 @@ const RegisterPage = () => {
     const { 
         result: { data: siteData }
     } = useList({
-        resource: "sites",
+        resource: "sites/names",
         pagination: { mode: "off" }, 
         queryOptions: {
             select: (result) => {
