@@ -1,5 +1,6 @@
 import express from "express";
 import { prisma } from "../../lib/prisma.ts";
+import { requireAuth, requireVerified } from "../middleware/auth.ts";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const router = express.Router();
  */
 
 // Get all Site with optional search, filtering and pagination
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, requireVerified, async (req, res) => {
     const { 
         id, 
         page = 1, 

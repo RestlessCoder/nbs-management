@@ -1,18 +1,20 @@
 import express from "express";
-import { signIn, signUp, signOut, verifyEmail } from "../../controllers/auth.controller.ts";
+import { signIn, signUp, signOut, verifyEmail, resendEmailVerification } from "../../controllers/auth.controller.ts";
 import { requireAuth, requireRole } from "../middleware/auth.ts";
 import { prisma } from "../../lib/prisma.ts";
 
 const router = express.Router();  
 
-// Register user
-router.post("/register", requireAuth, signUp);
-
 // PUBLIC: No middleware. 
 // This allows the user to send their email/password and GET a token. 
 router.post("/login", signIn);
 
-router.get("/verify-email", verifyEmail);
+router.get("/verify-email", requireAuth, verifyEmail);
+
+router.post("/resend-verification", requireAuth, resendEmailVerification); 
+
+// Register user
+router.post("/register", requireAuth, signUp);
 
 // Me
 router.get("/me", requireAuth, async (req, res) => {
@@ -25,6 +27,7 @@ router.get("/me", requireAuth, async (req, res) => {
   if (!userInfo) {
     return res.status(404).json({ message: "User not found" });
   }
+
   res.json({ 
     authenticated: true,
     user: req.user, 

@@ -33,6 +33,7 @@ const options: CreateDataProviderOptions = {
 
     
         mapResponse: async (response) => {
+
             const clonedResponse = response.clone(); 
             const payload: ListResponse = await clonedResponse.json();
 
@@ -48,6 +49,10 @@ const options: CreateDataProviderOptions = {
     }
 }
 
-const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options);
+
+
+const { dataProvider } = createDataProvider(BACKEND_BASE_URL, options, {
+    credentials: "include", 
+});
 
 export { dataProvider }

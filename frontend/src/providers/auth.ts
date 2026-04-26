@@ -1,4 +1,5 @@
 import type { AuthProvider } from "@refinedev/core";
+import SitesList from "../resources/sites/list";
 
 const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
@@ -122,7 +123,7 @@ export const authProvider: AuthProvider = {
 
     const user = await res.json();
 
-     localStorage.setItem("user_role", JSON.stringify(user.user?.role) || "USER"); 
+    localStorage.setItem("user_role", JSON.stringify(user.user?.role) || "USER"); 
 
     if (res.ok) {
       return { authenticated: true };
@@ -148,6 +149,9 @@ export const authProvider: AuthProvider = {
       name: data.name,
       email: data.email,
       role: data.role,
+      gender: data.gender,
+      siteId: data.siteId,
+      isVerified: data.isVerified,
     };
   },
 

@@ -24,10 +24,11 @@ import routerProvider, {
 
 import { dataProvider } from "./providers/data.ts";
 import { authProvider } from "./providers/auth.ts";
+import { accessControlProvider } from "./providers/access.ts";
 
 import LoginPage from "./pages/Login.tsx";
 import RegisterPage from "./pages/Register.tsx";
-import { accessControlProvider } from "./providers/access.ts";
+import VerifyPage from "./pages/Verify.tsx";
 
 const AppLayout = () => {
   return (
@@ -131,6 +132,16 @@ function App() {
                 </Authenticated>
              }
             />
+
+            <Route
+              path="/verify-email"
+              element={
+                <Authenticated fallback={<Navigate to="/login" />} key={""}>
+                  <VerifyPage />
+                </Authenticated>
+              }
+            />
+
 
             {/* Protected Routes for Admin */}
             <Route

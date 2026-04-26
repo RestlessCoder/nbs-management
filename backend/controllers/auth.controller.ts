@@ -11,8 +11,8 @@ const cookieOptions = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
-const generateToken = (userId: number, role: "ADMIN" | "USER") => {
-    return jwt.sign({ userId, role }, process.env.JWT_SECRET as string, {
+const generateToken = (id: number, email: string, role: "ADMIN" | "USER", isVerified: boolean) => {
+    return jwt.sign({id, email, role, isVerified }, process.env.JWT_SECRET as string, {
         expiresIn: "7d",
     });
 }
@@ -54,10 +54,7 @@ export const signUp = async (
         },
     });
 
-    // Send verification email
     await sendVerificationEmail(name, email, verifyToken);
-
-    console.log("User registered:", req.user?.role);
 
     if (req.user?.role === "ADMIN") {
       // Admin is creating another user → don’t log in the new user
@@ -75,7 +72,7 @@ export const signUp = async (
 
     } else {
         // Normal self‑signup → issue login cookie
-        const loginToken = generateToken(newUser.id, newUser.role);
+        const loginToken = generateToken(newUser.id, newUser.email, newUser.role, newUser.isVerified);
 
         res.cookie("token", loginToken, cookieOptions);
     
@@ -87,7 +84,8 @@ export const signUp = async (
                 email: newUser.email, 
                 role: newUser.role,
                 siteId: newUser.siteId,
-                gender: newUser.gender
+                gender: newUser.gender,
+                isVerified: newUser.isVerified
             }
         });
     }
@@ -100,30 +98,37 @@ export const verifyEmail = async (
     const { token } = req.query;
 
     if(!token) return res.status(400).json({ message: "Verification token is required" });
-
+    
     try {
         // Verify token
-        const decoded: any = jwt.verify(token as string, process.env.JWT_SECRET!);
-        
+        const decoded: any = jwt.verify(token as string, process.env.JWT_SECRET!) as {
+            id: number;
+            email: string;
+        };
+
         // Find user by email
         const user = await prisma.user.findUnique({ where: { email: decoded.email } });
-        if (!user || user.verificationToken !== token) {
-        return res.status(400).json({ message: "Invalid token" });
-        }
+        
+        if(!user) return res.status(401).json({ message: "This verification token is invalid or not associated with this account" });
 
+        if (user?.isVerified) return res.status(200).json({ message: "Email already verified" });
+
+        if (user?.verificationToken !== token) {
+            return res.status(400).json({ message: "Invalid token" });
+        }
         // Update user as verified
         const updatedUser = await prisma.user.update({
             where: { email: decoded.email },
             data: { isVerified: true, verificationToken: null },
         });
 
-        // Gemerate login token
-        const loginToken = generateToken(updatedUser.id, updatedUser.role);
+        // Generate a new token (JWT)
+        const verifyToken = generateToken(updatedUser.id, updatedUser.email, updatedUser.role, updatedUser.isVerified);
 
-        res.cookie("token", loginToken,  cookieOptions);
+        res.cookie("token", verifyToken,  cookieOptions);
 
         return res.status(200).json({
-            message: "Email verified successfully. You are now logged in.",
+            message: "Email verified successfully.",
             user: {
                 id: updatedUser.id,
                 name: updatedUser.name,
@@ -131,15 +136,51 @@ export const verifyEmail = async (
                 role: updatedUser.role,
                 siteId: updatedUser.siteId,
                 gender: updatedUser.gender,
+                isVerified: updatedUser.isVerified,
             },
         });
-
-        console.log("Email verified for", decoded.email);
+    
     } catch (error) {
         console.error("Email verification error:", error);
         return res.status(400).json({ message: "Verification failed" });
     }
 };
+
+export const resendEmailVerification = async (
+    req: Request,
+    res: Response,
+) => {
+    try {
+         // Find user by ID from auth middleware
+        const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
+
+        if (!user) return res.status(404).json({ message: "User not found" })
+        if (user.isVerified) return res.status(400).json({ message: "User already verified" });
+        
+        // Generate a new token
+        const resendVerifyToken = generateToken(user.id, user.email, user.role, user.isVerified);
+        
+        // Save token in DB
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
+            data: { verificationToken: resendVerifyToken },
+        });
+
+        res.cookie("token", resendVerifyToken,  cookieOptions);
+        
+        // Send email (reuse your mailer function)
+        await sendVerificationEmail(updatedUser.name, updatedUser.email, updatedUser.verificationToken!);
+        
+        res.cookie("token", updatedUser.verificationToken, cookieOptions);
+
+        res.json({ message: "Verification email resent" });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error resending verification email" });
+    }
+
+}
 
 export const signIn = async (
     req: Request, 
@@ -162,7 +203,7 @@ export const signIn = async (
     if (!isMatch) return res.status(400).json({ message: "Incorrect password" });
 
     // 4. Generate JWT token based on role
-    const token = generateToken(user.id, user.role);
+    const token = generateToken(user.id, user.email, user.role, user.isVerified);
 
     res.cookie("token", token, cookieOptions);
 
@@ -174,6 +215,7 @@ export const signIn = async (
             name: user.name,            
             email: user.email,
             role: user.role,
+            isVerified: user.isVerified,
         }     
     });    
 };
@@ -185,4 +227,5 @@ export const signOut = async (
     res.cookie("token", "", { ...cookieOptions, maxAge: 1 });
 
     return res.status(200).json({ message: "Logged out successfully" });
+
 }      
