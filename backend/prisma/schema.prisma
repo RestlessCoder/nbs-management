@@ -67,12 +67,16 @@ model User {
   password          String   @db.VarChar(255)
   role              Role     @default(USER)
   siteId            Int?     @map("site_id")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  gender            Gender   @default(GUY)
-  isVerified        Boolean  @default(false)
-  verificationToken String?
-  site              Site?    @relation(fields: [siteId], references: [id])
+
+  resetPasswordToken   String?     
+  resetPasswordExpires DateTime? 
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  gender             Gender   @default(GUY)
+  isVerified         Boolean  @default(false)
+  verificationToken  String?
+  site               Site?    @relation(fields: [siteId], references: [id])
 
   @@index([siteId])
   @@map("users")

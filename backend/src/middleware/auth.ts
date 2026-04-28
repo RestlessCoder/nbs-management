@@ -63,8 +63,6 @@ export const requireVerified = async (
   if (!req.user) {
     return res.status(401).json({ message: "Not authenticated" });
   }
-
-  console.log("User verification status:", req.user);
   
   if (!req.user?.isVerified) {
     return res.status(403).json({ message: "Please verify your account first." });

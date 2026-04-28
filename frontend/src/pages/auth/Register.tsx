@@ -1,9 +1,9 @@
-import brandLogo from "../assets/images/brand-logo.svg";
+import brandLogo from "../../assets/images/brand-logo.svg";
 import { Link, useList, useRegister } from "@refinedev/core";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
-import { RegisterSchema, type RegisterFormValues } from "../lib/validation";
+import { RegisterSchema, type RegisterFormValues } from "../../lib/validation";
 
 
 const RegisterPage = () => {

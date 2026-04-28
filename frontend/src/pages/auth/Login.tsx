@@ -1,11 +1,11 @@
-import bgRedImage from "../assets/images/red-bg.png";
-import brandLogo from "../assets/images/brand-logo.svg";
-import { GridIcon, ListIcon, BoltIcon, UsersIcon } from "../assets/images";
+import bgRedImage from "../../assets/images/red-bg.png";
+import brandLogo from "../../assets/images/brand-logo.svg";
+import { GridIcon, ListIcon, BoltIcon, UsersIcon } from "../../assets/images";
 import { useLogin } from "@refinedev/core";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
-import { LoginSchema, type LoginFormValues } from "../lib/validation";
+import { LoginSchema, type LoginFormValues } from "../../lib/validation";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';

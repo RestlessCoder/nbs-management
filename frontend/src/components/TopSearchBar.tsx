@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParsed, useGo, useGetIdentity } from "@refinedev/core";
+import type { User } from "../types";
+import { useParsed, useGo } from "@refinedev/core";
 import { capitalizeString } from "../utils";
 
-const TopSearchBar = () => {
+const TopSearchBar = ({ user } : { user: User }) => {
 
-  const { data: user } = useGetIdentity();
   const { params } = useParsed(); // read current query params
   const go = useGo();             // function to navigate
 

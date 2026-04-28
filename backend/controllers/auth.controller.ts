@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
-import { sendVerificationEmail } from '../src/services/emailService';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../src/services/emailService';
 
 const cookieOptions = {
     httpOnly: true,
@@ -141,8 +141,10 @@ export const verifyEmail = async (
         });
     
     } catch (error) {
-        console.error("Email verification error:", error);
-        return res.status(400).json({ message: "Verification failed" });
+        return res.status(400).json({ 
+            message: (error as any).name === "TokenExpiredError" ? 
+                "Verification token has expired. Please request a new verification email." 
+                : "Verification Error" });
     }
 };
 
@@ -166,12 +168,10 @@ export const resendEmailVerification = async (
             data: { verificationToken: resendVerifyToken },
         });
 
-        res.cookie("token", resendVerifyToken,  cookieOptions);
-        
         // Send email (reuse your mailer function)
         await sendVerificationEmail(updatedUser.name, updatedUser.email, updatedUser.verificationToken!);
         
-        res.cookie("token", updatedUser.verificationToken, cookieOptions);
+        res.cookie("token", resendVerifyToken, cookieOptions);
 
         res.json({ message: "Verification email resent" });
 
@@ -202,7 +202,7 @@ export const signIn = async (
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Incorrect password" });
 
-    // 4. Generate JWT token based on role
+    // 4. Generate JWT token and set cookie
     const token = generateToken(user.id, user.email, user.role, user.isVerified);
 
     res.cookie("token", token, cookieOptions);
@@ -229,3 +229,40 @@ export const signOut = async (
     return res.status(200).json({ message: "Logged out successfully" });
 
 }      
+
+export const forgotPassword = async (
+    req: Request,
+    res: Response,
+) => {
+    
+    try {
+        const { email } = req.body;     
+
+        if (!email) return res.status(400).json({ message: "Email is required" });
+
+        const user = await prisma.user.findUnique({ where: { email } });  
+
+        if (!user) return res.status(404).json({ message: "Email not found" });
+
+        const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: "15min" });
+        
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        
+        await prisma.user.update({  
+            where: { email: user.email },
+            data: { 
+                resetPasswordToken: user.resetPasswordToken,
+                resetPasswordExpires: user.resetPasswordExpires 
+            },
+        });
+
+        await sendPasswordResetEmail(user.name, user.email, resetToken);
+
+        return res.status(200).json({ message: "Password reset email sent" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error resending forgot password request" });
+    }
+}
+
