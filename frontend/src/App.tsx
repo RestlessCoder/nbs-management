@@ -13,10 +13,11 @@ import JobsList from "./resources/jobs/list.tsx";
 import SitesList from "./resources/sites/list.tsx";
 import UsersList from "./resources/users/list.tsx";
 
+import Spinner from "./components/Spinner.tsx";
 import SidebarNav from "./components/SidebarNav.tsx";
 import TopSearchBar from "./components/TopSearchBar.tsx";
 
-import { Refine, Authenticated, CanAccess } from "@refinedev/core";
+import { Refine, Authenticated, CanAccess, useGetIdentity } from "@refinedev/core";
 import routerProvider, { 
   UnsavedChangesNotifier, 
   DocumentTitleHandler 
@@ -26,17 +27,25 @@ import { dataProvider } from "./providers/data.ts";
 import { authProvider } from "./providers/auth.ts";
 import { accessControlProvider } from "./providers/access.ts";
 
-import LoginPage from "./pages/Login.tsx";
-import RegisterPage from "./pages/Register.tsx";
-import VerifyPage from "./pages/Verify.tsx";
+import LoginPage from "./pages/auth/Login.tsx";
+import RegisterPage from "./pages/auth/Register.tsx";
+import VerifyPage from "./pages/auth/Verify.tsx";
+import ForgotPasswordPage from "./pages/auth/ForgetPassword.tsx";
+import ResetPasswordPage from "./pages/auth/ResetPassword.tsx";
+import { useEffect, useState } from "react";
 
 const AppLayout = () => {
+
+  const { data: user, isLoading } = useGetIdentity();
+
+  if (isLoading) return <Spinner />;
+
   return (
     <main className="page-body">
         <div className="block-container">
           <SidebarNav />
           <div className="main-body-right">
-            <TopSearchBar />
+            <TopSearchBar user={user} />
             <Outlet />
           </div>
         </div>
@@ -44,7 +53,7 @@ const AppLayout = () => {
   )
 };
 function App() {
-
+  
   return (
     <BrowserRouter>
     <Refine
@@ -142,6 +151,26 @@ function App() {
               }
             />
 
+            {/* Public Routes for Password Reset */}
+            <Route
+              path="/reset-password"
+              element={<ResetPasswordPage />}
+            />
+
+             {/* Protected Routes for Admin */}
+            <Route
+              path="/forgot-password"
+              element={
+                <Authenticated fallback={<Navigate to="/login" />} key={""}>
+                    <CanAccess 
+                      action="create"
+                      fallback={<Navigate to="/login" />}
+                      resource="forgot-password">
+                      <ForgotPasswordPage />
+                      </CanAccess>
+                </Authenticated>
+              }
+            />
 
             {/* Protected Routes for Admin */}
             <Route

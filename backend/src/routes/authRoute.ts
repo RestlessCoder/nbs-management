@@ -1,6 +1,14 @@
 import express from "express";
-import { signIn, signUp, signOut, verifyEmail, resendEmailVerification } from "../../controllers/auth.controller.ts";
-import { requireAuth, requireRole } from "../middleware/auth.ts";
+import {  
+  signIn, 
+  signUp, 
+  signOut, 
+  verifyEmail, 
+  resendEmailVerification, 
+  forgotPassword, 
+  updatePassword
+} from "../../controllers/auth.controller.ts";
+import { requireAuth } from "../middleware/auth.ts";
 import { prisma } from "../../lib/prisma.ts";
 
 const router = express.Router();  
@@ -12,6 +20,10 @@ router.post("/login", signIn);
 router.get("/verify-email", requireAuth, verifyEmail);
 
 router.post("/resend-verification", requireAuth, resendEmailVerification); 
+
+router.post("/forgot-password", forgotPassword);
+
+router.post("/reset-password", updatePassword);
 
 // Register user
 router.post("/register", requireAuth, signUp);

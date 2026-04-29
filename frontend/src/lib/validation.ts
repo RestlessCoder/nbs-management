@@ -37,3 +37,24 @@ export const RegisterSchema = z.object({
 
 // Create a type from the schema for TypeScript safety
 export type RegisterFormValues = z.infer<typeof RegisterSchema>;
+
+export const ForgotPasswordSchema = z.object({
+  newPassword: z.string()
+              .min(6, { message: "Password must be at least 6 characters" })
+              .max(20, { message: "Password must no more than 20 characters"})
+              .refine((value) => /^(?:(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*)$/.test(value ?? ""), 
+                { message: "Password needs at least 1 number, 1 lower case and 1 upper case letter"}
+              ),
+  confirmNewPassword: z.string().min(1, { message: "Confirm Password is required"}),
+}).superRefine((value, ctx) => {
+    if (value.newPassword !== value.confirmNewPassword) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["confirmNewPassword"],
+        message: "Password does not match"
+      })
+    }
+});
+
+// Create a type from the schema for TypeScript safety
+export type ForgotPasswordFormValues = z.infer<typeof ForgotPasswordSchema>;

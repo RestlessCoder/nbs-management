@@ -105,7 +105,7 @@ const LoginPage = () => {
                             <div className="logo">
                                 <img src={brandLogo} alt="brand logo" />
                             </div>
-                           
+
                             <div className="login__field">
                           
                                 {serverError != null && (

@@ -14,6 +14,7 @@ export const accessControlProvider: AccessControlProvider = {
        if (user === "USER") {
             if (resource === "users") return { can: false };
             if (resource === "register") return { can: false };
+            if (resource === "forgot-password") return { can: false };
 
             // Example: allow read-only
             if (action === "list" || action === "show") {

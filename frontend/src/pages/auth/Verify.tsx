@@ -8,8 +8,10 @@ const VerifyPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { open } = useNotification();
+    const { data: user, refetch } = useGetIdentity();
     const [status, setStatus] = useState<"success" | "error">();
     const [serverMessage, setServerMessage] = useState<string>();
+
 
     useEffect(() => {
 
@@ -20,7 +22,7 @@ const VerifyPage = () => {
             return;
         }
 
-        axios.get("http://localhost:3000/api/auth/verify-email", { 
+        axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/auth/verify-email`, { 
             params: { token }, 
             withCredentials: true 
         }).then(res => {
@@ -38,18 +40,18 @@ const VerifyPage = () => {
         });
     }, [user, searchParams, refetch, open]);
 
-    console.log("User from useGetIdentity:", user);
+
     return (
         <div className="verify-container">
             <div className="verify-card">
-                {status === "error" || user?.isVerified === false ? (
-                    <>
+                {!user?.isVerified && status === "error" || !user?.isVerified ? (
+                    <>      
                             <div className="icon error">✖</div>
                             <h1>Email hasn't been verified</h1>
                             {serverMessage && <p style={{ lineHeight: 1.2, marginBottom: '0.65rem' }}>{serverMessage}</p>}
                             <ResendVerification />
                         </>
-                    ) : status === "success" || user?.isVerified === true ? (
+                    ) : status === "success" || user?.isVerified ? (
                         <>
                             <div className="icon success">✔</div>    
                             <h1>Email Already Verified</h1>

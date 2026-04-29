@@ -1,5 +1,4 @@
 import type { AuthProvider } from "@refinedev/core";
-import SitesList from "../resources/sites/list";
 
 const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
@@ -95,8 +94,8 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
-    localStorage.removeItem("is_logged_in");
-    localStorage.removeItem("user_role");
+    localStorage.clear();
+    sessionStorage.clear();
 
     await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
@@ -109,14 +108,79 @@ export const authProvider: AuthProvider = {
     };
   },
 
+  forgotPassword: async ({ email } : { email: string }) => {
+    const res = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      return {
+        success: false,
+        error: {
+          message: error?.message || "Password reset request failed",
+          statusCode: res.status,
+        },
+      };
+    }
+    
+    return {
+      success: true,
+      successNotification: {
+        message: "Password reset successful",
+        description: "Your password has been successfully reset.",
+      },
+    };
+  },
+
+  updatePassword: async ({ 
+    token, 
+    newPassword, 
+    confirmNewPassword 
+  } : { 
+    token: string, 
+    newPassword: string, 
+    confirmNewPassword: string 
+  }) => {
+    const res = await fetch(`${API_URL}/auth/reset-password`, {
+      method: "POST", 
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword, confirmNewPassword }),
+    }); 
+
+    if (!res.ok) {
+      const error = await res.json();
+      return {
+        success: false,
+        error: {
+          message: error?.message || "Password reset request failed",
+          statusCode: res.status,
+        },
+      };
+    }
+
+
+    return {
+      success: true,
+      successNotification: {
+        message: "Password updated successfully",
+        description: "You have successfully updated password.",
+      },
+    };
+  },
+
   check: async () => {
     // First check if we have a hint that the user is logged in (to avoid unnecessary API calls)
     const isLoggedHint = localStorage.getItem("is_logged_in");
 
     if (!isLoggedHint) {
       return { authenticated: false, redirectTo: "/login" };
-    }
-
+    } 
+    
     const res = await fetch(`${API_URL}/auth/me`, {
       credentials: "include",
     });

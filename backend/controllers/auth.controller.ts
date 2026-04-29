@@ -114,7 +114,7 @@ export const verifyEmail = async (
         if (user?.isVerified) return res.status(200).json({ message: "Email already verified" });
 
         if (user?.verificationToken !== token) {
-            return res.status(400).json({ message: "Invalid token" });
+            return res.status(400).json({ message: "Verification token has expired. Please request a new verification email." });
         }
         // Update user as verified
         const updatedUser = await prisma.user.update({
@@ -123,8 +123,13 @@ export const verifyEmail = async (
         });
 
         // Generate a new token (JWT)
-        const verifyToken = generateToken(updatedUser.id, updatedUser.email, updatedUser.role, updatedUser.isVerified);
-
+        const verifyToken = jwt.sign({ 
+            id: updatedUser.id, 
+            email: updatedUser.email, 
+            role: updatedUser.role, 
+            isVerified: updatedUser.isVerified 
+        }, process.env.JWT_SECRET as string, { expiresIn: "15min" });
+        
         res.cookie("token", verifyToken,  cookieOptions);
 
         return res.status(200).json({
@@ -140,11 +145,15 @@ export const verifyEmail = async (
             },
         });
     
-    } catch (error) {
-        return res.status(400).json({ 
-            message: (error as any).name === "TokenExpiredError" ? 
-                "Verification token has expired. Please request a new verification email." 
-                : "Verification Error" });
+    } catch (err) {
+        return res.status(400).json({
+            message:
+                (err as any)?.name === "TokenExpiredError"
+                    ? "Verification token has expired. Please request a new verification email."
+                    : (err as any)?.name === "JsonWebTokenError"
+                    ? "Invalid verification token. Please request a new verification email."
+                    : "Verification failed"
+        });
     }
 };
 
@@ -266,3 +275,78 @@ export const forgotPassword = async (
     }
 }
 
+export const updatePassword = async (
+    req: Request,
+    res: Response,  
+) => {
+
+    const { token, newPassword, confirmNewPassword } = req.body;
+    
+    if(!token) return res.status(400).json({ message: "Reset password token is required" });
+
+    if (!newPassword || !confirmNewPassword) {
+        return res.status(400).json({ message: "All password fields are required" });
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({ message: "New password and confirmation do not match" });
+    }
+    
+    try {
+       
+        // Verify token
+        const decoded: any = jwt.verify(token as string, process.env.JWT_SECRET!) as {
+            id: number;
+            email: string;
+        };
+
+        if (!decoded.email) return res.status(400).json({ message: "Invalid token" });
+
+        const user = await prisma.user.findUnique({ where: { email: decoded.email } });
+        
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Check token validity in DB
+        if (
+            !user.resetPasswordToken ||
+            user.resetPasswordToken !== token ||
+            !user.resetPasswordExpires ||
+            user.resetPasswordExpires < new Date()
+        ) {
+            return res.status(401).json({ message: "Reset token is invalid or expired" });
+        }
+
+        //  Prevent reusing the same password
+        const isMatch = await bcrypt.compare(newPassword, user.password);
+
+        if (isMatch) {
+            return res.status(400).json({ message: "New password cannot be the same as the old password." });
+        }
+
+        console.log("Updating password for user:", isMatch);
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+            where: { email: user.email },
+            data: {
+                password: hashedPassword,
+                resetPasswordToken: null,
+                resetPasswordExpires: null,
+            },
+         });
+        
+        return res.status(200).json({ message: "Password updated successfully" });
+
+    }   catch (err) {
+
+        return res.status(400).json({
+            message:
+                (err as any)?.name === "TokenExpiredError"
+                    ? "Reset Password token has expired. Please request a new reset password email."
+                    : (err as any)?.name === "JsonWebTokenError"
+                    ? "Invalid reset password token. Please request a new reset password email."
+                    : (err as any)?.message || "Password reset failed"
+        });
+    }   
+}
