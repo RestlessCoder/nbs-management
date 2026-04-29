@@ -2,11 +2,13 @@ import {
   BrowserRouter, 
   Routes, 
   Route, 
-  Outlet 
+  Outlet, 
+  Navigate
 } from "react-router";
 import './App.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import $ from 'jquery';
+import { useEffect } from "react";
 import 'foundation-sites';
 
 import DashboardPage from "./pages/DashboardPage.tsx";
@@ -15,25 +17,38 @@ import JobsList from "./resources/jobs/list.tsx";
 import SitesList from "./resources/sites/list.tsx";
 import UsersList from "./resources/users/list.tsx";
 
+import Spinner from "./components/Spinner.tsx";
 import SidebarNav from "./components/SidebarNav.tsx";
 import TopSearchBar from "./components/TopSearchBar.tsx";
 
-import { Refine } from "@refinedev/core";
+import { Refine, Authenticated, CanAccess, useGetIdentity } from "@refinedev/core";
 import routerProvider, { 
   UnsavedChangesNotifier, 
   DocumentTitleHandler 
 } from "@refinedev/react-router";
 
 import { dataProvider } from "./providers/data.ts";
-import { useEffect } from "react";
+import { authProvider } from "./providers/auth.ts";
+import { accessControlProvider } from "./providers/access.ts";
+
+import LoginPage from "./pages/auth/Login.tsx";
+import RegisterPage from "./pages/auth/Register.tsx";
+import VerifyPage from "./pages/auth/Verify.tsx";
+import ForgotPasswordPage from "./pages/auth/ForgetPassword.tsx";
+import ResetPasswordPage from "./pages/auth/ResetPassword.tsx";
 
 const AppLayout = () => {
+
+  const { data: user, isLoading } = useGetIdentity();
+
+  if (isLoading) return <Spinner />;
+
   return (
     <main className="page-body">
         <div className="block-container">
           <SidebarNav />
           <div className="main-body-right">
-            <TopSearchBar />
+            <TopSearchBar user={user} />
             <Outlet />
           </div>
         </div>
@@ -41,17 +56,18 @@ const AppLayout = () => {
   )
 };
 function App() {
-
+  
   useEffect(() => {
     $(document).foundation();
   }, []);
-
 
   return (
     <BrowserRouter>
     <Refine
           dataProvider={dataProvider}
           routerProvider={routerProvider}
+          accessControlProvider={accessControlProvider}
+          authProvider={authProvider}
             resources={[
               {
                 name: "dashboard",
@@ -105,16 +121,83 @@ function App() {
             ]}
         >
         <Routes>
-              <Route element={
-                <AppLayout />
+            <Route element={
+                <Authenticated 
+                    redirectOnFail="/login"
+                    key={""}
+                >
+                    <AppLayout />
+                </Authenticated>
               }
-            >
+            > 
+              
+              {/* Protected Routes */}
               <Route path="/" element={<DashboardPage />} />
               <Route path="/jobs" element={<JobsList />} />
               <Route path="/assets" element={<AssetsList/>} />
               <Route path="/sites" element={<SitesList />} />
               <Route path="/users" element={<UsersList />} />
             </Route>
+            
+            {/* Public Routes */}
+            <Route
+              path="/login"
+              element={
+                <Authenticated fallback={<LoginPage />} key={""}>
+                  <Navigate to="/" />
+                </Authenticated>
+             }
+            />
+
+            <Route
+              path="/verify-email"
+              element={
+                <Authenticated fallback={<Navigate to="/login" />} key={""}>
+                  <VerifyPage />
+                </Authenticated>
+              }
+            />
+
+            {/* Public Routes for Password Reset */}
+            <Route
+              path="/reset-password"
+              element={<ResetPasswordPage />}
+            />
+
+             {/* Protected Routes for Admin */}
+            <Route
+              path="/forgot-password"
+              element={
+                <Authenticated fallback={<Navigate to="/login" />} key={""}>
+                    <CanAccess 
+                      action="create"
+                      fallback={<Navigate to="/login" />}
+                      resource="forgot-password">
+                      <ForgotPasswordPage />
+                      </CanAccess>
+                </Authenticated>
+              }
+            />
+
+            {/* Protected Routes for Admin */}
+            <Route
+              path="/register"
+              element={
+                <Authenticated 
+                  redirectOnFail="/login" 
+                  key={""}
+                >
+                  <CanAccess 
+                    action="create"
+                    resource="register"
+                    fallback={<Navigate to="/login" />}
+                  >
+                    <RegisterPage />
+                  </CanAccess>
+                </Authenticated>
+             }
+            />
+              
             <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>      
         <UnsavedChangesNotifier />

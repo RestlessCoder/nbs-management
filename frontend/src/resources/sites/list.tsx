@@ -1,9 +1,11 @@
-import { useTable, useParsed } from "@refinedev/core";
+import { useTable, useParsed,  useGetIdentity } from "@refinedev/core";
 import { type Sites } from "../../types";
 import { formatNumber } from "../../utils"
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react"
+import { ResendVerification } from "../../components/ResendVerification";
 
 const SitesList = () => {   
+    const { data: user } = useGetIdentity();
     const { params } = useParsed();
     const searchFromUrl = params?.search;
     const [filterValue, setFilterValue] = useState("");
@@ -11,7 +13,7 @@ const SitesList = () => {
     const [userHasInteracted, setUserHasInteracted] = useState(false);
 
     const { 
-        result: { data: siteData, total },
+        result: { data: siteData, total  },
         tableQuery: { isError , isLoading, error, refetch },
         currentPage,
         setCurrentPage,
@@ -34,7 +36,7 @@ const SitesList = () => {
         filters: {
             initial: []
         },
-        syncWithLocation: userHasInteracted
+        syncWithLocation: userHasInteracted,
     });
 
     // Identify which field is currently sorted to highlight the tab
@@ -82,7 +84,6 @@ const SitesList = () => {
             return () => clearTimeout(timer);
         }
     }, [isLoading]);
-
     
     // First load to keep the URL params clean
     useEffect(() => {
@@ -98,9 +99,9 @@ const SitesList = () => {
         setFilters(
         [
             {
-            field: "search",
-            operator: "contains",
-            value: searchFromUrl || undefined,
+                field: "search",
+                operator: "contains",
+                value: searchFromUrl || undefined,
             },
         ],
         "merge"
@@ -109,7 +110,15 @@ const SitesList = () => {
         setCurrentPage(1); // reset page when searching
     }, [searchFromUrl]);
 
-    //console.log("Site ", siteData);
+    useEffect(() => {
+         // If there's an error, we want to stop the loading skeleton immediately
+        if (isError) {
+            setTableLoading(false);
+        }
+
+        //console.error("Error fetching sites:", error);
+    }
+    , [isError]);
 
     return (
         <div className="body-dashboard generic-padding bg--whiteSmoke">
@@ -160,11 +169,26 @@ const SitesList = () => {
                                     </div>
                                 </div>
                         )}
+
+                        {
+                            user?.isVerified === false && (
+                                <div className="error-badge-container">
+                                    <div className="error-badge">   
+                                        <p>
+                                            Your email is not verified. Please check your inbox for the verification email. 
+                                            <ResendVerification />
+                                        </p>
+                                    </div>
+                                </div>
+                            )
+                        }
                         
-                        <div className="sites-table">
-                            <table className="sites-table__content">
-                                <thead className="sites-table__header">
-                                    <tr className="sites-table__row">
+                        {
+                            user?.isVerified === true && 
+                            <div className="sites-table">
+                                <table className="sites-table__content">
+                                    <thead className="sites-table__header">
+                                        <tr className="sites-table__row">
                                         <th className="sites-table__cell">Site No.</th>
                                         <th className="sites-table__cell">Site Name</th>
                                         <th className="sites-table__cell">Location</th>
@@ -296,6 +320,7 @@ const SitesList = () => {
                                 </nav>
                             }
                         </div>
+                        }
                     </div>
                 </div>
             </section>

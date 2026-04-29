@@ -1,15 +1,17 @@
-import { useMenu } from "@refinedev/core";
+import { useMenu, useLogout } from "@refinedev/core";
 import { Link } from "react-router";
 import { useState } from "react";
 
+
 const SidebarNav = () => {
+    const { mutate: logout } = useLogout();
     const { menuItems, selectedKey } = useMenu();
     const [isLightMode, setIsLightMode] = useState(false);
 
     const toggleLightMode = () => {
         setIsLightMode(!isLightMode);
     }
-
+    
     return (
         <>
             <div className="main-sidebar-left" style={isLightMode ? { backgroundColor: "#fff" } : { backgroundColor: "#B1142C" }}>
@@ -61,10 +63,12 @@ const SidebarNav = () => {
                     <span className="border-inbetween border-inbetween--sm-padding"></span>
 
                     <div className="logout-button">
-                        <span className="logout">
-                        <svg className="logout-icon" xmlns="http://www.w3.org/2000/svg" width="25" height="25.002" viewBox="0 0 25 25.002"><path d="M21.251,35h-4.5A1.752,1.752,0,0,1,15,33.251V16.75A1.752,1.752,0,0,1,16.75,15h4.5a1.25,1.25,0,1,0,0-2.5h-4.5a4.255,4.255,0,0,0-4.25,4.25v16.5a4.255,4.255,0,0,0,4.25,4.25h4.5a1.25,1.25,0,1,0,0-2.5Z" transform="translate(-12.5 -12.5)" fill="#fff" className="logout-icon"/>
-                            <path className="logout-icon" d="M37.405,25.478a1.251,1.251,0,0,0-.271-1.362l-6.249-6.25a1.25,1.25,0,1,0-1.768,1.768l4.116,4.116H21.25a1.25,1.25,0,0,0,0,2.5H33.233l-4.116,4.116a1.25,1.25,0,0,0,1.768,1.768l6.249-6.25A1.246,1.246,0,0,0,37.405,25.478Z" transform="translate(-12.5 -12.5)" fill="#fff" />
-                        </svg>Logout</span>
+                        <span 
+                            className="logout"
+                            onClick={() => logout()}>
+                            <svg className="logout-icon" xmlns="http://www.w3.org/2000/svg" width="25" height="25.002" viewBox="0 0 25 25.002"><path d="M21.251,35h-4.5A1.752,1.752,0,0,1,15,33.251V16.75A1.752,1.752,0,0,1,16.75,15h4.5a1.25,1.25,0,1,0,0-2.5h-4.5a4.255,4.255,0,0,0-4.25,4.25v16.5a4.255,4.255,0,0,0,4.25,4.25h4.5a1.25,1.25,0,1,0,0-2.5Z" transform="translate(-12.5 -12.5)" fill="#fff" className="logout-icon"/>
+                                <path className="logout-icon" d="M37.405,25.478a1.251,1.251,0,0,0-.271-1.362l-6.249-6.25a1.25,1.25,0,1,0-1.768,1.768l4.116,4.116H21.25a1.25,1.25,0,0,0,0,2.5H33.233l-4.116,4.116a1.25,1.25,0,0,0,1.768,1.768l6.249-6.25A1.246,1.246,0,0,0,37.405,25.478Z" transform="translate(-12.5 -12.5)" fill="#fff" />
+                            </svg>Logout</span>
                         <span className="brand-logo">
                             <img 
                                 className="brand-logo-image" 

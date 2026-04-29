@@ -1,19 +1,15 @@
-
-
 import React, { useEffect, useState } from "react";
+import type { User } from "../types";
 import { useParsed, useGo } from "@refinedev/core";
 import { capitalizeString } from "../utils";
 
-const TopSearchBar = () => {
+const TopSearchBar = ({ user } : { user: User }) => {
 
   const { params } = useParsed(); // read current query params
   const go = useGo();             // function to navigate
 
   const currentResource = window.location.pathname.replace("/", ""); 
 
-  console.log(params)
-  console.log(currentResource)
-  
   const [searchQuery, setSearchQuery] = useState(params?.search || "");
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,9 +52,13 @@ const TopSearchBar = () => {
         </div>
         <div className="user-details">
             <div className="user-details__image">
-                <img src="src/assets/images/user-boy.svg" alt="user boy" />
+                <img 
+                  src={user?.gender === "GUY" ? 
+                    `src/assets/images/user-man.svg` : 
+                    `src/assets/images/user-women.svg`}
+                  alt={user?.gender && user.gender.toLowerCase() || "user"} />
             </div>
-            <span className="user-details__name">Tony McNahon</span>
+            {user?.name && <span className="user-details__name">{user?.name.charAt(0).toUpperCase() + user?.name.slice(1) || ""}</span>}
         </div>
     </div>
 

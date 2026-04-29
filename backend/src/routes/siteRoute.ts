@@ -1,5 +1,6 @@
 import express from "express";
 import { prisma } from "../../lib/prisma.ts";
+import { requireAuth, requireVerified } from "../middleware/auth.ts";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const router = express.Router();
  */
 
 // Get all Site with optional search, filtering and pagination
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, requireVerified, async (req, res) => {
     const { 
         id, 
         page = 1, 
@@ -21,6 +22,7 @@ router.get("/", async (req, res) => {
         _sort = 'createdAt', 
         _order = 'desc' 
     } = req.query;
+    
     
     // HANDLE useMany (Filtering by ID) 
     if (id) {
@@ -93,7 +95,23 @@ router.get("/", async (req, res) => {
 
 })
 
+/**
+ * GET /api/sites/names
+ * Handles: Fetching only the names for dropdowns 
+ */
+router.get("/names", async (req, res) => {
+   try {
+        const sites = await prisma.site.findMany({
+            select: { id: true, name: true }, 
+            orderBy: { name: "asc" },        
+        });
 
+        res.json({ data: sites });
+    } catch (error) {
+        console.error("Error fetching site names:", error);
+        res.status(500).json({ error: "Failed to fetch site names" });
+    }
+})
 
 /**
  * GET /api/sites/:id

@@ -34,6 +34,16 @@ export type ListResponse<T = unknown> = {
     }
 }
 
+export type User = {
+    id: number;
+    name: string;
+    email: string;
+    role: "ADMIN" | "USER";
+    siteId: number;
+    gender: "GUY" | "GIRL";
+    isVerified: boolean;
+}
+
 export type DynamicNavFilterProps = {
     resource: string;
     activeValue?: string;
