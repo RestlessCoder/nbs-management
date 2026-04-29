@@ -6,6 +6,10 @@ import {
   Navigate
 } from "react-router";
 import './App.css'
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import $ from 'jquery';
+import { useEffect } from "react";
+import 'foundation-sites';
 
 import DashboardPage from "./pages/DashboardPage.tsx";
 import AssetsList from "./resources/assets/list.tsx";
@@ -32,7 +36,6 @@ import RegisterPage from "./pages/auth/Register.tsx";
 import VerifyPage from "./pages/auth/Verify.tsx";
 import ForgotPasswordPage from "./pages/auth/ForgetPassword.tsx";
 import ResetPasswordPage from "./pages/auth/ResetPassword.tsx";
-import { useEffect, useState } from "react";
 
 const AppLayout = () => {
 
@@ -54,6 +57,10 @@ const AppLayout = () => {
 };
 function App() {
   
+  useEffect(() => {
+    $(document).foundation();
+  }, []);
+
   return (
     <BrowserRouter>
     <Refine
