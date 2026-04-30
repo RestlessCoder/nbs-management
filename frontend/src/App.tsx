@@ -5,10 +5,10 @@ import {
   Outlet, 
   Navigate
 } from "react-router";
-import './App.css'
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import $ from 'jquery';
 import { useEffect } from "react";
+import '../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
+import './App.css';
+import $ from 'jquery';
 import 'foundation-sites';
 
 import DashboardPage from "./pages/DashboardPage.tsx";

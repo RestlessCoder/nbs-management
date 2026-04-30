@@ -10,8 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fortawesome/free-solid-svg-icons": "^7.2.0",
-    "@fortawesome/react-fontawesome": "^3.3.0",
+    "@fortawesome/fontawesome-free": "^7.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@refinedev/core": "^5.0.11",
     "@refinedev/react-hook-form": "^5.0.4",

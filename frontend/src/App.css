@@ -223,9 +223,9 @@ html, body {
 .verify-card p { color: #666; margin-top: 0.25rem; margin-bottom:0; }
 
 
-.icon { font-size: 3rem; margin-bottom: 1rem;}
-.icon.success { color: #28a745; }
-.icon.error { color: #dc3545; }
+.verify-card .icon { font-size: 3rem; margin-bottom: 1rem;}
+.verify-card .icon.success { color: #28a745; }
+.verify-card .icon.error { color: #dc3545; }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
