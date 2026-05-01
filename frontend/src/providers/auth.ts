@@ -33,6 +33,7 @@ export const authProvider: AuthProvider = {
       const user = await res.json();
 
       localStorage.setItem("is_logged_in", "true");
+      localStorage.setItem("user_id", JSON.stringify(user.user?.id) || ""); // Store user ID for access control
       localStorage.setItem("user_role", JSON.stringify(user.user?.role) || "USER"); // Store user role for access controlsss
 
     }

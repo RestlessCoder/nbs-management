@@ -260,6 +260,53 @@ html, body {
   }
 }
 
+/* Modal background */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index:999;
+}
+
+/* Modal box */
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.actions { margin-top: 20px; display: flex; justify-content: space-around; }
+
+.delete-btn {
+  background: #e53e3e;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover { background: #c53030; }
+
+.cancel-btn {
+  background: #a0aec0;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.cancel-btn:hover { background: #718096; }
+
+.username { font-weight: bold; color: #e53e3e; }
+
+
 .resend-link { display: inline-block; color: #007bff; margin-left:0.25rem;
     text-decoration: underline; font-weight: 600; transition: color 0.2s; 
 }
@@ -277,11 +324,16 @@ html, body {
 .gender-label { max-width:375px; margin:0 auto; text-align:left; }
 
 /* Overwrite */
+.btn.btn--primary:active,
+.btn.btn--primary:focus { color:#fff; }
+
 .btn.sign-in { margin-top:1.75rem; }
 .generic-label { margin-top:1rem; display:block; }
 .table-container .filter-form-select .filter-select--min-width195 { max-width:195px; }
 .generic-input { margin-bottom:0; }
 .generic-input.email { margin-bottom:0; }
+
+.users-table__body .users-table__cell.action .button-circle-icon a { color:#2d2d48; }
 
 .login-section.register .error-text { margin:0.35rem auto; max-width:375px; text-align:left; }
 .login-section.register .block__container { width:100%; justify-content:center; }

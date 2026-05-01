@@ -44,8 +44,33 @@ export type User = {
     isVerified: boolean;
 }
 
+export type DeleteModalProps = {
+    show: boolean;
+    entity: EntityType | null;
+    onCancel: () => void;
+    onConfirm: (id: number) => void;
+}
+
+export type FieldConfig = {
+    name: string;
+    label: string;
+    type: "text" | "select";
+    options?: { value: string; label: string }[]; // For select fields
+}
+
+export type EditModalProps = {
+    show: boolean;
+    entity: EntityType | null;
+    fields: FieldConfig[];
+    onCancel: () => void;
+    onConfirm: (updatedEntity: any) => void;
+}
+
 export type DynamicNavFilterProps = {
     resource: string;
     activeValue?: string;
     onSortChange?: (field: string) => void;
 }
+
+
+type EntityType = Assets | User;

@@ -249,7 +249,7 @@ const SitesList = () => {
                                                         <td className="sites-table__cell budget">&#163;{formatNumber(site.budget)}</td>
                                                         <td className="sites-table__cell action">
                                                             {/* To Do List Favourite --> */}
-                                                            <button className="button-circle-icon button-favourite">
+                                                            <button className="button-circle-icon button-favourite liked">
                                                                 <i className="far fa-heart"></i>
                                                             </button>
                                                             {/* To Do List Edit --> */}
@@ -266,7 +266,7 @@ const SitesList = () => {
                             </table>
 
                                                     
-                            {!tableLoading && totalCount > 0 && 
+                            {!tableLoading && totalCount > pageSize && 
                         
                                 <nav className="pagination-container">
                                     {/* Previous Button */}

@@ -1,5 +1,8 @@
 import express from "express";
 import { prisma } from "../../lib/prisma.ts";
+import { requireAuth, requireRole } from "../middleware/auth.ts";
+
+const router = express.Router();
 
 /**
  * GET /api/assets
@@ -10,9 +13,6 @@ import { prisma } from "../../lib/prisma.ts";
  * - Sort By and Order By (Navigation Filter)
  */
 
-const router = express.Router();
-
-// Get all Assets with optional search, filtering and pagination
 router.get("/", async (req, res) => {
     const { 
         page = 1, 
@@ -75,6 +75,32 @@ router.get("/", async (req, res) => {
     } catch (error) {
         console.error("Error fetching assets:", error);
         res.status(500).json({ error: "Failed to fetch assets" });
+    }
+});
+
+/**
+ * DELETE /api/assets/:id
+ * Handles: Deleting an asset by its ID,
+ */
+router.delete("/:id", requireAuth, requireRole(['ADMIN']), async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedAsset = await prisma.asset.delete({
+            where: { id: Number(id) },
+            include: { site: true } // Include relation for the detail view
+        });
+
+        if (!deletedAsset) return res.status(404).json({ error: "Asset not found" });
+
+        res.json({
+            message: "Asset deleted successfully",
+            data: deletedAsset,
+        });
+
+    } catch (err) {
+        console.error("Error deleting asset:", err);
+        res.status(500).json({ error: "Failed to delete asset" });
     }
 });
 

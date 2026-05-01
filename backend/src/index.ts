@@ -3,6 +3,7 @@ import cors from "cors";
 import assetsRouter from "./routes/assetsRoute.ts";
 import siteRouter from "./routes/siteRoute.ts";
 import authRoutes from "./routes/authRoute.ts";
+import userRouter from "./routes/userRoute.ts";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 
+app.use("/api/users", userRouter);
 app.use("/api/sites", siteRouter);
 app.use("/api/assets", assetsRouter);
 
