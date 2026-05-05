@@ -9,3 +9,12 @@ export const capitalizeString = (str: string) => {
 export const formatNumber = (num : number) => {
   return Number(num).toLocaleString();
 };
+
+export const formatEnum = (value: string) => {
+  // Lowercase, replace underscores, then capitalize each word
+  return value
+    .toLowerCase()
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}

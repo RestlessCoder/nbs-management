@@ -6,29 +6,29 @@ const options: CreateDataProviderOptions = {
     getList: {
         getEndpoint: ({ resource }) => resource,
 
-          buildQueryParams: async ({ pagination, filters, sorters }) => {
+        buildQueryParams: async ({ pagination, filters, sorters }) => {
 
             const { currentPage = 1, pageSize = 10 } = pagination ?? {};
 
-            const searchFilter = filters?.find((f) => "field" in f && f.field === "search");
-
-            const activeSorter = sorters?.[0];
-
-            const activeFilters = filters?.reduce((acc, filter) => {
-                if ("field" in filter && filter.value !== undefined && filter.value !== null) {
-                    return { ...acc, [filter.field]: filter.value };
-                }
-                return acc;
-            }, {}) ?? {};
-
-            return {
+            const query: Record<string, any> = {
                 page: currentPage,
                 limit: pageSize,
-                search: searchFilter && "value" in searchFilter ? searchFilter.value : "",
-                _sort: activeSorter?.field,
-                _order: activeSorter?.order,
-                ...activeFilters,
             };
+
+            // Flatten filters into simple query params
+            filters?.forEach((filter) => {
+                if ("field" in filter && filter.value !== undefined && filter.value !== null) {
+                    query[filter.field] = filter.value;
+                }
+            });
+
+            // Handle sorting
+            if (sorters && sorters.length > 0) {
+                query._sort = sorters[0].field;
+                query._order = sorters[0].order;
+            }
+
+           return query;
         },
 
     

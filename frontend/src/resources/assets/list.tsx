@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { type Assets } from "../../types";
 import { DynamicNavFilter } from "../../components/DynamicNavFilter.tsx";
-
 import { CanAccess, useList, useMany, useParsed, useTable } from "@refinedev/core";
+import { formatEnum } from "../../utils/index.ts";
+
 import DeleteModal from "../../components/DeleteModal.tsx";
 import axios from "axios";
 
@@ -263,11 +264,11 @@ const AssetsList = () => {
                                                         return (
                                                             <tr key={asset.id}>
                                                                 <td className="assets-table__cell asset-name">{asset.name}</td>
-                                                                <td className="assets-table__cell asset-type">{asset.type}</td>
+                                                                <td className="assets-table__cell asset-type">{formatEnum(asset.type)}</td>
                                                                 <td className="assets-table__cell asset-site">
                                                                     {`${site?.data.code} ${site?.data.location}` || `Site #${asset.siteId}`}
                                                                 </td>
-                                                                <td className="assets-table__cell asset-manufacturer">Unknown</td>
+                                                                <td className="assets-table__cell asset-manufacturer">{formatEnum(asset.manufacturer)}</td>
                                                                 <td className="assets-table__cell asset-year">{asset.year}</td>
                                                                 <td className="assets-table__cell asset-fixes">
                                                                     <span className="block">{asset.quickFixes}</span>

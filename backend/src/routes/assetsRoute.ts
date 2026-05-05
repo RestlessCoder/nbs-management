@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma } from "../../lib/prisma.ts";
 import { requireAuth, requireRole } from "../middleware/auth.ts";
+import { AssetType } from "../../generated/prisma/enums.ts";
 
 const router = express.Router();
 
@@ -27,6 +28,14 @@ router.get("/", async (req, res) => {
     const skip = (parseInt(String(page)) - 1) * parseInt(String(limit));
     const take = parseInt(String(limit));   
 
+    // AssetType is a string enum-like object. 
+    // Convert object to values array and find a match to support user-friendly search.
+    const assetTypeValues = Object.values(AssetType); // ['CEILING','LIGHTING',...]
+
+    const matchedType = assetTypeValues.find(t =>
+        t.toLowerCase().includes(search.toString().toLowerCase())
+    );
+
     // Define search and year filter across both Asset and Site tables 
    const where = {
         AND: [
@@ -34,7 +43,7 @@ router.get("/", async (req, res) => {
             search ? {
                 OR: [
                     { name: { contains: String(search), mode: 'insensitive' as const } },
-                    { type: { contains: String(search), mode: 'insensitive' as const } },
+                    { type: { equals: matchedType as AssetType } },
                     { site: { name: { contains: String(search), mode: 'insensitive' as const } } }
                 ],
             } : {},
@@ -101,6 +110,25 @@ router.delete("/:id", requireAuth, requireRole(['ADMIN']), async (req, res) => {
     } catch (err) {
         console.error("Error deleting asset:", err);
         res.status(500).json({ error: "Failed to delete asset" });
+    }
+});
+
+/**
+ * GET /api/assets/:id
+ * Handles: Fetching a single asset by its URL ID
+ */
+router.get("/:id", async (req, res) => {
+    try {
+        const asset = await prisma.asset.findUnique({
+            where: { id: parseInt(req.params.id) },
+            include: { site: true } // Include relation for the detail view
+        });
+
+        if (!asset) return res.status(404).json({ error: "Asset not found" });
+
+        res.json({ data: asset });
+    } catch (error) {
+        res.status(500).json({ error: "Invalid ID or Server Error" });
     }
 });
 

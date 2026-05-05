@@ -10,11 +10,11 @@ datasource db {
 model Asset {
   id           Int       @id @default(autoincrement())
   name         String    @db.VarChar(255)
-  type         String    @db.VarChar(255)
+  type         AssetType
   siteId       Int?      @map("site_id")
   manufacturer String    @db.VarChar(500)
   year         Int
-  quickFixes   Int       @map("quick_fixes")
+  quickFixes   Int       @default(0) @map("quick_fixes")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime? @updatedAt @map("updated_at")
   site         Site?     @relation(fields: [siteId], references: [id], onDelete: Restrict)
@@ -25,19 +25,20 @@ model Asset {
 }
 
 model Site {
-  id         Int       @id @default(autoincrement())
-  code       String    @unique @db.VarChar(50)
-  name       String    @db.VarChar(255)
-  location   String    @db.VarChar(255)
-  entity     String
-  category   String
-  budget     Float
-  isFavorite Boolean   @default(false) @map("is_favorite")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime? @updatedAt @map("updated_at")
-  assets     Asset[]
-  jobs       Job[]
-  user       User[]
+  id          Int                @id @default(autoincrement())
+  code        String             @unique @db.VarChar(50)
+  name        String             @db.VarChar(255)
+  location    String             @db.VarChar(255)
+  entity      String
+  category    String
+  budget      Float
+  isFavorite  Boolean            @default(false) @map("is_favorite")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime?          @updatedAt @map("updated_at")
+  assets      Asset[]
+  jobs        Job[]
+  favoritedBy UserFavoriteSite[]
+  user        User[]
 
   @@map("sites")
 }
@@ -47,11 +48,12 @@ model Job {
   reference   Int
   description String    @db.VarChar(500)
   cost        Float
-  status      Status    @default(PENDING)
+  status      Status   
   siteId      Int?      @map("site_id")
   assetId     Int?      @map("asset_id")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime? @updatedAt @map("updated_at")
+  quickFixes  Int       @default(0) @map("quick_fixes")
   asset       Asset?    @relation(fields: [assetId], references: [id])
   site        Site?     @relation(fields: [siteId], references: [id])
 
@@ -61,25 +63,35 @@ model Job {
 }
 
 model User {
-  id                Int      @id @default(autoincrement())
-  email             String   @unique
-  name              String   @db.VarChar(255)
-  password          String   @db.VarChar(255)
-  role              Role     @default(USER)
-  siteId            Int?     @map("site_id")
-
-  resetPasswordToken   String?     
-  resetPasswordExpires DateTime? 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  gender             Gender   @default(GUY)
-  isVerified         Boolean  @default(false)
-  verificationToken  String?
-  site               Site?    @relation(fields: [siteId], references: [id])
+  id                   Int                @id @default(autoincrement())
+  email                String             @unique
+  name                 String             @db.VarChar(255)
+  password             String             @db.VarChar(255)
+  role                 Role               @default(USER)
+  siteId               Int?               @map("site_id")
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  gender               Gender             @default(GUY)
+  isVerified           Boolean            @default(false)
+  verificationToken    String?
+  userFavoriteSites    UserFavoriteSite[]
+  site                 Site?              @relation(fields: [siteId], references: [id])
 
   @@index([siteId])
   @@map("users")
+}
+
+model UserFavoriteSite {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  siteId Int
+  site   Site @relation(fields: [siteId], references: [id])
+  user   User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, siteId])
+  @@map("user_favorite_sites")
 }
 
 enum Gender {
@@ -94,7 +106,6 @@ enum Role {
 }
 
 enum Status {
-  PENDING
   CLOSED_NOT_AS_REPORTED
   HOLDING_TANK
   CONTRACT_ON_SITE
@@ -103,4 +114,26 @@ enum Status {
   COMPLETE_AS_REPORTED
   JOB_APPROVED
   LOGGED_WITH_NBS
+}
+
+enum AssetType {
+  CEILING
+  LIGHTING
+  TOILER_ROLL_HODLDER
+  SOAP_DISPENSER
+  WALL
+  KITCHEN_EXTRACTION_UNIT
+  SECURITY
+  SAFETY
+  CLEANING
+  REFRIGERATION
+  WASHROOM
+  WASTE_MANAGEMENT
+}
+
+enum Manufacturer {
+  PHILIPS
+  DELL
+  SAMSUNG
+  UNKNOWN
 }

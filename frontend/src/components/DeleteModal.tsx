@@ -9,13 +9,17 @@ const DeleteModal = ({
 
     if (!show  || !entity ) return null;
 
+    const displayName = 'name' in entity ? entity.name : entity.reference;
+
     return (
          <div className="modal">
             <div className="modal-content">
                 <h3>Confirm Deletion</h3>
                 <p>
                     Are you sure you want to delete{" "}
-                    <span className="username">{entity?.name}</span>?
+                    <span className="username">                        
+                        {displayName}
+                    </span>?
                 </p>
                 <div className="actions">
                 <button onClick={onCancel} className="cancel-btn">

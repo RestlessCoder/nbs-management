@@ -55,7 +55,7 @@ const TopSearchBar = ({ user } : { user: User }) => {
                 <img 
                   src={user?.gender === "GUY" ? 
                     `src/assets/images/user-man.svg` : 
-                    `src/assets/images/user-women.svg`}
+                    `src/assets/images/user-girl.svg`}
                   alt={user?.gender && user.gender.toLowerCase() || "user"} />
             </div>
             {user?.name && <span className="user-details__name">{user?.name.charAt(0).toUpperCase() + user?.name.slice(1) || ""}</span>}
