@@ -323,9 +323,36 @@ html, body {
 .radio-group input[type="radio"] { margin-bottom:0; }
 .gender-label { max-width:375px; margin:0 auto; text-align:left; }
 
+.job-block-container {
+  margin-bottom:1rem;
+  margin-top:2rem;
+  display: grid;
+  grid-template-columns: 1fr; /* default: mobile, 1 column */
+  gap: 20px; /* spacing between blocks */
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+  .job-block-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+  .job-block-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 /* Overwrite */
 .btn.btn--primary:active,
 .btn.btn--primary:focus { color:#fff; }
+
+.jobs-table__body .jobs-table__cell.job-status .status-form-select .custom-select { font-weight:600!important; }
+
+.custom-select:disabled { color: inherit; cursor:default; }
+.custom-select:disabled:hover { cursor:default; }
 
 .btn.sign-in { margin-top:1.75rem; }
 .generic-label { margin-top:1rem; display:block; }
@@ -338,6 +365,19 @@ html, body {
 .login-section.register .error-text { margin:0.35rem auto; max-width:375px; text-align:left; }
 .login-section.register .block__container { width:100%; justify-content:center; }
 .login-section.register .block__content { position:relative; top:unset; transform:unset; padding-top:5rem; padding-bottom:2.5rem; }
+
+.table-container .filter-buttons .filter-buttons__row.active svg rect { fill:#787d96; }
+.table-container .filter-buttons .filter-buttons__column.active svg rect { fill:#787d96; }
+ 
+.option--darkorange { background-color:rgba(242,114,19,0.15)!important; }
+.option--crimson { background-color: rgba(199,42,67,0.15)!important; }
+.option--darkslateblue { background-color: rgba(45,45,72,0.15)!important; }
+.option--indigo { background-color: rgba(79, 70, 229, 0.15)!important; }
+.option--dodgerblue { background-color:rgba(36,143,255,0.15)!important; } 
+.option--mediumseagreen { background-color: rgba(35,167,110,0.15)!important; }
+.option--orange { background-color:rgba(252,185,1,0.15)!important;  }
+.option--teal { background-color: rgba(20,108,101,0.15)!important; }
+.option--darkviolet { background-color: rgba(137, 0, 255, 0.15)!important; }
 
 @media screen and (max-width: 89.9988em) {
     .top-dashboard-bar .user-details {

@@ -24,6 +24,19 @@ export type Sites = {
     updatedAt: string;
 }
 
+export type Jobs = {
+    id: number;
+    siteId: number;
+    site: string;
+    assetId: number;
+    asset: string;
+    reference: string;
+    description: string;   
+    cost: number;
+    status: "string";
+    quickFixes: number;
+}
+
 export type ListResponse<T = unknown> = {
     data?: T[];
     pagination?: {
@@ -66,11 +79,25 @@ export type EditModalProps = {
     onConfirm: (updatedEntity: any) => void;
 }
 
+export type ListViewBlockProps = {
+    jobData: Jobs[];
+    allSite: any;
+    allAssets: any;
+    statusOptions: any;
+    deleteJob: (job: Jobs) => void;
+}   
+
 export type DynamicNavFilterProps = {
     resource: string;
     activeValue?: string;
     onSortChange?: (field: string) => void;
 }
 
+export type JobStatusSelectProps = {
+    job: any;
+    statusOptions: object[];
+    onChange?: (newStatus: string) => void;
+    canEdit: boolean;
+}
 
-type EntityType = Assets | User;
+type EntityType = Assets | User | Sites | Jobs;

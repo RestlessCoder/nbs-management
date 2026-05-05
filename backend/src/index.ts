@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import assetsRouter from "./routes/assetsRoute.ts";
+import jobsRouter from "./routes/jobsRoute.ts";
 import siteRouter from "./routes/siteRoute.ts";
 import authRoutes from "./routes/authRoute.ts";
 import userRouter from "./routes/userRoute.ts";
@@ -29,6 +30,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/users", userRouter);
 app.use("/api/sites", siteRouter);
+app.use("/api/jobs", jobsRouter);
 app.use("/api/assets", assetsRouter);
 
 app.listen(PORT, () => {
