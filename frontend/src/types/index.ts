@@ -20,6 +20,8 @@ export type Sites = {
     category: string;
     createdAt: string;
     budget: number;
+    jobs: Jobs[];
+    assets: Assets[];
     isFavorite: boolean;
     updatedAt: string;
 }
@@ -86,6 +88,11 @@ export type ListViewBlockProps = {
     statusOptions: any;
     deleteJob: (job: Jobs) => void;
 }   
+
+export type StatusCardBlockProps = {
+    sitesData: Sites[];
+    isLoading: boolean;
+}
 
 export type DynamicNavFilterProps = {
     resource: string;

@@ -5,6 +5,7 @@ import jobsRouter from "./routes/jobsRoute.ts";
 import siteRouter from "./routes/siteRoute.ts";
 import authRoutes from "./routes/authRoute.ts";
 import userRouter from "./routes/userRoute.ts";
+import dashboardRoutes from "./routes/dashboardRoute.ts";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use("/api/users", userRouter);
 app.use("/api/sites", siteRouter);
