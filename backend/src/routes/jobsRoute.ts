@@ -87,6 +87,62 @@ router.get("/", async (req, res) => {
 });
 
 /**
+ * POST /api/jobs/add-job
+ * Handles: Adding Jobs
+ */
+router.post("/add-job", async (req, res) => {
+
+async function generateReference() {
+    const lastJob = await prisma.job.findFirst({ orderBy: { reference: "desc" }, });
+    // If no jobs yet, start at 100400
+    if (!lastJob) return 100400;
+
+    return lastJob.reference + 1;
+}
+  try {
+    const {
+      description,
+      siteId,
+      assetId,
+      quickFixes
+    } = req.body;
+
+    const reference = await generateReference();
+
+    const newJob = await prisma.job.create({
+      data: {
+        reference,
+        description,  
+        siteId,      
+        assetId,     
+        quickFixes: Number(quickFixes) || 0, 
+        cost: 0,
+        status: Status.LOGGED_WITH_NBS
+      },
+      include: { site: true, asset: true } // include relations if needed
+    });
+
+    if (assetId && quickFixes > 0) {
+        await prisma.asset.update({
+            where: { id: assetId },
+            data: {
+                quickFixes: { increment: Number(quickFixes) || 0 } // Increment quickFixes count for the asset
+            }
+        });
+    }
+
+    res.json({
+      message: "Job created successfully",
+      data: newJob,
+    });
+
+  } catch (err) {
+    console.error("Error creating job:", err);
+    res.status(500).json({ error: "Failed to create job" });
+  }
+});
+
+/**
  * DELETE /api/jobs/:id
  * Handles: Deleting a job by its ID,
  */

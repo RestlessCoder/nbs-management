@@ -21,6 +21,7 @@ model Asset {
   jobs         Job[]
 
   @@index([siteId])
+  @@unique([name]) 
   @@map("assets")
 }
 
@@ -40,12 +41,13 @@ model Site {
   favoritedBy UserFavoriteSite[]
   user        User[]
 
+  @@unique([name]) 
   @@map("sites")
 }
 
 model Job {
   id          Int       @id @default(autoincrement())
-  reference   Int
+  reference   Int       @unique
   description String    @db.VarChar(500)
   cost        Float
   status      Status   

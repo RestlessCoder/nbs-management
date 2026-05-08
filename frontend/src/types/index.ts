@@ -89,6 +89,11 @@ export type ListViewBlockProps = {
     deleteJob: (job: Jobs) => void;
 }   
 
+export type ReportFaultFormProps = {
+    show: boolean;
+    onClose: () => void;
+}
+
 export type StatusCardBlockProps = {
     sitesData: Sites[];
     isLoading: boolean;

@@ -286,6 +286,11 @@ html, body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
+.modal-content.modal-content--report-fault {
+  width:750px; padding:2.25rem; text-align:left; position:relative;
+}
+
+
 .actions { margin-top: 20px; display: flex; justify-content: space-around; }
 
 .delete-btn {
@@ -320,6 +325,7 @@ html, body {
 .link:hover { color:#000; }
 .mt--24 { margin-top:1.5rem; }
 .error-text { line-height:1; max-width:375px; margin-left:auto; margin-right:auto; text-align:left; color: #ff0000; display:block; margin-top:0.325rem; font-size:0.85rem; }
+.error-report-text { text-align:left; color: #ff0000; margin-top:0.325rem; font-size:0.85rem; }
 .cursor-pointer { cursor:pointer; }
 .font-bold { font-weight:600; }
 
@@ -334,6 +340,35 @@ html, body {
   display: grid;
   grid-template-columns: 1fr; /* default: mobile, 1 column */
   gap: 20px; /* spacing between blocks */
+}
+
+.success-message {
+  text-align: center;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.success-message .success-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+    color: #28a745;
+}
+
+.success-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.success-text {
+  font-size: 1.15rem;
+  color:#787d96;
+  margin-bottom:0rem;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Tablet: 2 columns */
@@ -354,8 +389,12 @@ html, body {
 .btn.btn--primary:active,
 .btn.btn--primary:focus { color:#fff; }
 
+.searchform-wrapper.searchform-wrapper--custom { background-color:#f5f5f7; border-bottom: 1px solid rgba(120, 125, 150, 0.2); }
+
 .description { margin-bottom:3.2rem!important; }
 .jobs-table__body .jobs-table__cell.job-status .status-form-select .custom-select { font-weight:600!important; }
+
+.custom-text { font-size: 1.5rem; font-weight:300; margin-bottom:1rem; } 
 
 .custom-select:disabled { color: inherit; cursor:default; }
 .custom-select:disabled:hover { cursor:default; }
@@ -364,7 +403,9 @@ html, body {
 .generic-label { margin-top:1rem; display:block; }
 .table-container .filter-form-select .filter-select--min-width195 { max-width:195px; }
 .generic-input { margin-bottom:0; }
+.generic-input.generic-input--fixes { height:60px; border-radius:5px; }
 .generic-input.email { margin-bottom:0; }
+.generic-textarea { border-radius:5px; height:80px;font-size: 15px; font-weight: 400; padding-left: 1rem; }
 
 .users-table__body .users-table__cell.action .button-circle-icon a { color:#2d2d48; }
 

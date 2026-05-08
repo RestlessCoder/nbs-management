@@ -58,3 +58,28 @@ export const ForgotPasswordSchema = z.object({
 
 // Create a type from the schema for TypeScript safety
 export type ForgotPasswordFormValues = z.infer<typeof ForgotPasswordSchema>;
+
+export const ReportFaultSchema = z.object({
+  location: z.string().min(1, "Location is required"),
+  assetType: z.string().min(1, "Asset type is required"),
+  description: z.string().min(1, "Description is required").max(500, "Description must be no more than 500 characters"),
+  siteId: z.preprocess(
+    (val) => val === "" ? null : Number(val),
+    z.number({ message: "Site must be selected" }).nullable()
+  ) as unknown as z.ZodNullable<z.ZodNumber>,
+  assetId: z.preprocess(
+    (val) => val === "" ? null : Number(val),
+    z.number({ message: "Asset must be selected" }).nullable()
+  ) as unknown as z.ZodNullable<z.ZodNumber>,
+  quickFixes: z.preprocess(
+    (val) => val === "" ? null : Number(val),
+     z.number({ message: "Quick Fixes must be a number" })
+      .int("Must be an integer")
+      .min(0, "Number cannot be negative")
+      .max(5, "Max number is 5")
+      .nullable()
+  ) as unknown as z.ZodNullable<z.ZodNumber>,
+});
+
+// Create a type from the schema for TypeScript safety
+export type ReportFaultFormValues = z.infer<typeof ReportFaultSchema>;

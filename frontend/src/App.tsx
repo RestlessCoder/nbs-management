@@ -5,7 +5,7 @@ import {
   Outlet, 
   Navigate
 } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import '../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
 import $ from 'jquery';
@@ -37,21 +37,33 @@ import VerifyPage from "./pages/auth/Verify.tsx";
 import ForgotPasswordPage from "./pages/auth/ForgetPassword.tsx";
 import ResetPasswordPage from "./pages/auth/ResetPassword.tsx";
 
+import ReportFaultForm from "./components/ReportFaultForm.tsx";
+
 const AppLayout = () => {
 
   const { data: user, isLoading } = useGetIdentity();
+  const [showReportForm, setShowReportForm] = useState(false);
+
+  const openReportForm = () => setShowReportForm(true); 
+  const onCloseForm = () => setShowReportForm(false);
 
   if (isLoading) return <Spinner />;
 
   return (
     <main className="page-body">
         <div className="block-container">
-          <SidebarNav />
+          <SidebarNav 
+            onOpenReportForm={openReportForm}
+          />
           <div className="main-body-right">
             <TopSearchBar user={user} />
             <Outlet />
           </div>
         </div>
+        <ReportFaultForm 
+          show={showReportForm}
+          onClose={onCloseForm}
+        />
     </main>
   )
 };
@@ -173,7 +185,7 @@ function App() {
                       action="create"
                       fallback={<Navigate to="/login" />}
                       resource="forgot-password">
-                      <ForgotPasswordPage />
+                        <ForgotPasswordPage />
                       </CanAccess>
                 </Authenticated>
               }

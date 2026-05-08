@@ -80,10 +80,11 @@ const DashboardPage = () => {
     acc.totalAssets += site.assets.length;
     acc.totalJobs += site.jobs.length;
     acc.budget += site.budget || 0;
+    acc.quickFixes += site.jobs.reduce((sum: number, job: { quickFixes: number; }) => sum + (job.quickFixes || 0), 0);
     acc.cost += site.jobs.reduce((sum: number, job: { cost: number; }) => sum + (job.cost || 0), 0);
     
     return acc;
-  }, { totalAssets: 0, totalJobs: 0, budget: 0, cost: 0 });
+  }, { totalAssets: 0, totalJobs: 0, budget: 0, quickFixes: 0, cost: 0 });
 
   const balance = siteTotals.budget - siteTotals.cost;
 
@@ -143,8 +144,14 @@ const DashboardPage = () => {
           <div className="cell small-12 medium-6 xmedium-6 large-4 xlarge-3 mb--24">
             <div className="box-container white">
               <div className="box-container__top">
-                  <div className="update-details">
-                    <span className="number">20</span>
+                  <div className="update-details">                   
+                    <span className="number">
+                      {dataLoading ? (
+                          <span className="skeleton-line skeleton-line--short"></span>
+                      ) : (
+                          siteTotals.quickFixes
+                      )}   
+                    </span>
                     <span className="logo">
                       <img src="./src/assets/images/icons/time-red-icon.svg" alt="icon" />
                     </span>  
@@ -193,23 +200,27 @@ const DashboardPage = () => {
                 <li>
                   <div className="balance-details">
                     <span className="sub-title">Budget</span>
-                      {dataLoading ? (
-                        <span className="skeleton-line skeleton-line--short"></span>
-                      ) : (
-                        <span className="number">&#163;{formatNumberUK(siteTotals.budget)}</span>
-                      )}
-                    
+                      <span className="number">
+                        {dataLoading ? (
+                          <span className="skeleton-line skeleton-line--short"></span>
+                        ) : (
+                          <>&#163;{formatNumberUK(siteTotals.budget)}</>
+                        )}
+                      </span>
                   </div>
                 </li>
                 <li>
                   <div className="balance-details">
                     <span className="sub-title">Spend</span>
-                    {dataLoading ? (
-                        <span className="skeleton-line skeleton-line--short"></span>
-                      ) : (
-                        <span className="number">&#163;{formatNumberUK(siteTotals.cost)}</span>
-                      )}
-                  </div>
+                     <span className="number">
+                      {dataLoading ? (
+                          <span className="skeleton-line skeleton-line--short"></span>
+                        ) : (
+                          
+                           <>&#163;{formatNumberUK(siteTotals.cost)}</>
+                        )}
+                      </span>
+                    </div>
                 </li>
                 <li>
                   <div className="balance-details">

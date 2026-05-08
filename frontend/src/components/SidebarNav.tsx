@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useState } from "react";
 
 
-const SidebarNav = () => {
+const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
     const { mutate: logout } = useLogout();
     const { menuItems, selectedKey } = useMenu();
     const [isLightMode, setIsLightMode] = useState(false);
@@ -25,7 +25,8 @@ const SidebarNav = () => {
                     <div className="report-button">
                         <a 
                             className={`btn ${isLightMode ? "btn--primary" : "btn--black"} report`} 
-                            data-open="report-fault">
+                            onClick={() => onOpenReportForm()}
+                        >
                             Report a Fault
                         </a>
                     </div>
@@ -33,7 +34,7 @@ const SidebarNav = () => {
                         <ul>
                         {
                             menuItems.map((item) => (
-                                <li key={item.key} className={item.key === selectedKey ? "active" : ""}>
+                                <li key={item.key} className={item.key === selectedKey ? "is-active" : ""}>
                                     <Link to={item.route ?? "/"}
                                     >
                                         {item.meta?.icon !== undefined && item.meta.icon}   
