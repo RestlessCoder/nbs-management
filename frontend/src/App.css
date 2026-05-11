@@ -265,6 +265,8 @@ html, body {
   }
 }
 
+.text-position { position:relative; top:1px; }
+
 /* Modal background */
 .modal {
   position: fixed;
@@ -274,6 +276,11 @@ html, body {
   justify-content: center;
   align-items: center;
   z-index:999;
+}
+
+.modal.show {
+  animation: fadeIn 0.3s ease-out;
+  pointer-events: auto;
 }
 
 /* Modal box */
@@ -290,6 +297,9 @@ html, body {
   width:750px; padding:2.25rem; text-align:left; position:relative;
 }
 
+.modal-content.modal-content--edit {
+  width:425px; padding:2.25rem; text-align:left; position:relative;
+}
 
 .actions { margin-top: 20px; display: flex; justify-content: space-around; }
 
@@ -333,6 +343,20 @@ html, body {
 .radio-group label { display:flex; align-items:center; margin-right:1rem; }
 .radio-group input[type="radio"] { margin-bottom:0; }
 .gender-label { max-width:375px; margin:0 auto; text-align:left; }
+
+.dropdown-gender-option { position:absolute; background:#fff; border:1px solid #ccc; border-radius:4px; padding:0.5rem 0; width:100%; top:100%; left:0; z-index:99; }
+.relative { position:relative; }
+
+.edited-badge {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: #e0f7fa;
+  color: #00796b;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  letter-spacing: 0.1px;
+  font-weight: bold;
+}
 
 .job-block-container {
   margin-bottom:1rem;
@@ -395,7 +419,6 @@ html, body {
 .jobs-table__body .jobs-table__cell.job-status .status-form-select .custom-select { font-weight:600!important; }
 
 .custom-text { font-size: 1.5rem; font-weight:300; margin-bottom:1rem; } 
-
 .custom-select:disabled { color: inherit; cursor:default; }
 .custom-select:disabled:hover { cursor:default; }
 
@@ -404,8 +427,19 @@ html, body {
 .table-container .filter-form-select .filter-select--min-width195 { max-width:195px; }
 .generic-input { margin-bottom:0; }
 .generic-input.generic-input--fixes { height:60px; border-radius:5px; }
+.generic-input.generic-input--edit { height:54px; border-radius:5px; }
 .generic-input.email { margin-bottom:0; }
 .generic-textarea { border-radius:5px; height:80px;font-size: 15px; font-weight: 400; padding-left: 1rem; }
+
+.generic-select {
+    font-weight: 300;
+    font-size: 15px;
+    height: 55px;
+    border-radius: 5px;
+    background-image: url(src/assets/images/square-arrow-down.svg);
+    background-size: 28px;
+    padding-left: 1.15rem;
+}
 
 .users-table__body .users-table__cell.action .button-circle-icon a { color:#2d2d48; }
 

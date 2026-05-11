@@ -1,4 +1,4 @@
-import { useTable, useParsed, useGetIdentity, useMany, Link, CanAccess } from "@refinedev/core"
+import { useTable, useParsed, useGetIdentity, useMany, Link, CanAccess, useList } from "@refinedev/core"
 import { useEffect, useMemo, useState } from "react";
 import { ResendVerification } from "../../components/ResendVerification";
 import DeleteModal from "../../components/DeleteModal";
@@ -15,15 +15,15 @@ const UserList = () => {
     const [showDelete, setShowDelete] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [lastEditedUserId, setLastEditedUserId] = useState<number | null>(null);
     
     const openDelete = (user : User) => { setSelectedUser(user); setShowDelete(true); }
     const closeDelete = () => { setSelectedUser(null); setShowDelete(false); }
 
-    const openEdit = () => { setShowEdit(true); }
-    const closeEdit = () => { setShowEdit(false); }
+    const openEdit = (user: User) => { setSelectedUser(user); setShowEdit(true); }
+    const closeEdit = () => { setSelectedUser(null); setShowEdit(false); }
     
     const handleDelete = async (id: number) => {
-        console.log("Attempting to delete user with ID:", id);
         try {
             await axios.delete(`${import.meta.env.VITE_BACKEND_BASE_URL}/users/${id}`, 
                 { withCredentials: true }
@@ -39,11 +39,18 @@ const UserList = () => {
         }
     };
 
-    /* TODO - Edit user functionality */ 
-    const handleEdit = async (id: number) => {
+    const handleEdit = async (id: number, data: Partial<User>) => {
         try {
+
+            await axios.put(`${import.meta.env.VITE_BACKEND_BASE_URL}/users/${id}`, 
+            data,
+            { withCredentials: true}
+        );
+
             setShowEdit(false);
             closeEdit();
+            setLastEditedUserId(id);
+            refetch();
         } catch (err) {
             console.error("Error editing user:", err);
         }
@@ -124,14 +131,14 @@ const UserList = () => {
         let list = userData.filter(u => u.role !== "ADMIN");
 
         // Move me to top logic
-        const myIndex = list.findIndex((u) => u.id === user?.id);
+        const myIndex = list.findIndex((u) => u.id === (lastEditedUserId ?? user?.id));
         if (myIndex > -1) {
             const [me] = list.splice(myIndex, 1);
             list.unshift(me);
         }
         
         return list;
-    }, [userData, user]);
+    }, [userData, user, lastEditedUserId]);
 
     useEffect(() => {
         // If the API is loading, we are definitely loading
@@ -173,6 +180,29 @@ const UserList = () => {
     }
     , [isError]);
 
+    // Get all site value in assets db
+    const { 
+        result: { data: siteData }
+    } = useList({
+        resource: "sites/names",
+        pagination: { mode: "off" }, 
+        queryOptions: {
+            select: (result) => {
+                // 1. Get unique sites
+                const sites = [...new Set(result.data.map((a) => a).filter(Boolean))];
+
+                // 2. Sort sites in ascending order
+                return {
+                    data: sites.sort((a, b) => String(a).localeCompare(String(b))),
+                    total: sites.length,
+                };
+            },
+        },
+    });
+    
+    const dynamicSites = siteData ?? [];
+
+    
     return (
         <>
             <div className="body-dashboard generic-padding bg--whiteSmoke">
@@ -271,7 +301,16 @@ const UserList = () => {
                                                                                 `src/assets/images/user-girl.svg`}
                                                                             alt={user?.gender && user.gender.toLowerCase() || "user"} />
                                                                     </span>
-                                                                    <span className="user-name">{user.name}</span>
+                                                                    <span className="user-name">
+                                                                        <span className="text-position">{user.name}</span>
+                                                                    
+                                                                        {user.id === lastEditedUserId && (
+                                                                            <span className="edited-badge">
+                                                                                Just Edited
+                                                                            </span>
+                                                                        )}
+
+                                                                    </span>
                                                                 </td>
                                                                 <td className="users-table__cell site">
                                                                 <span className="box-shadow-block">
@@ -309,7 +348,7 @@ const UserList = () => {
                                                                         >
                                                                         <button 
                                                                             className="button-circle-icon button-edit"
-                                                                            onClick={() => openEdit()}
+                                                                            onClick={() => openEdit(user as User)}
                                                                         >
                                                                             <i className="far fa-edit icon"></i>
                                                                         </button>
@@ -385,19 +424,27 @@ const UserList = () => {
                 </section>
             </div>
                             
+                            
             <EditModal 
+                mode="USER"
                 show={showEdit}
                 entity={selectedUser as User}
                 fields={[
                     { name: "name", label: "Name", type: "text" },
-                    { name: "image", label: "Role", type: "select", options: [
+                    { name: "gender", label: "Gender", type: "select", options: [
                         { value: "GUY", label: "GUY" },
                         { value: "GIRL", label: "GIRL" },
                     ]},
-                    { name: "siteId", label: "Site", type: "select", options: allSite.map(s => ({ value: String(s.data.id), label: s.data.name })) },
+                    { name: "siteId", 
+                      label: "Site", 
+                      type: "select", 
+                      options: dynamicSites.map(site => ({ 
+                        value: String(site.id), label: site.name })
+                    ) 
+                    },
                 ]}
                 onCancel={() => setShowEdit(false)}
-                onConfirm={handleEdit}            
+                onConfirm={handleEdit} 
             />
             
             <DeleteModal 

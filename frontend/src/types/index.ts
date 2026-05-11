@@ -74,11 +74,12 @@ export type FieldConfig = {
 }
 
 export type EditModalProps = {
+    mode: string;
     show: boolean;
     entity: EntityType | null;
     fields: FieldConfig[];
     onCancel: () => void;
-    onConfirm: (updatedEntity: any) => void;
+    onConfirm: (id: number, data: Partial<User>) => void;
 }
 
 export type ListViewBlockProps = {

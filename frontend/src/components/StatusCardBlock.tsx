@@ -36,9 +36,6 @@ const StatusCardBlock = ({
             return safeIndexA - safeIndexB;
         }
     );
-    console.log("Site Status Counts:", statusOrderData);
-
-    console.log("Ordered Status Data:", orderedStatusData);
 
     return (
         <section className="box-container-section">

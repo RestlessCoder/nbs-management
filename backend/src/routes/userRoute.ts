@@ -23,7 +23,6 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
         _order = 'desc' 
     } = req.query;
     
-
  
     // HANDLE REGULAR LIST (Pagination) 
     const skip = (parseInt(String(page)) - 1) * parseInt(String(limit));
@@ -74,6 +73,43 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
     }
 
 })
+
+/**
+ * PUT /api/users/:id
+ * Handles: Updating a user by its ID,
+ */
+router.put("/:id", requireAuth, requireRole(['ADMIN', 'USER']), async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const {
+            name,
+            siteId,
+            gender
+        } = req.body;
+
+        const updatedUser = await prisma.user.update({
+            where: { id: Number(id) },
+            data: {
+                name,
+                gender,
+                siteId: Number(siteId),
+            },
+            include: { site: true } // Include relation for the detail view
+        });
+
+        if (!updatedUser) return res.status(404).json({ error: "User not found" });
+
+        res.json({
+            message: "User updated successfully",
+            data: updatedUser,
+        });
+
+    } catch (err) {
+        console.error("Error updating user:", err);
+        res.status(500).json({ error: "Failed to update user" });
+    }
+});
 
 
 /**

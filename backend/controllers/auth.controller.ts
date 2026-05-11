@@ -323,8 +323,6 @@ export const updatePassword = async (
             return res.status(400).json({ message: "New password cannot be the same as the old password." });
         }
 
-        console.log("Updating password for user:", isMatch);
-
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         await prisma.user.update({
