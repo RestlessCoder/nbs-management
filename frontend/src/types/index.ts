@@ -37,6 +37,7 @@ export type Jobs = {
     cost: number;
     status: "string";
     quickFixes: number;
+    createdAt: string;
 }
 
 export type ListResponse<T = unknown> = {
@@ -69,7 +70,7 @@ export type DeleteModalProps = {
 export type FieldConfig = {
     name: string;
     label: string;
-    type: "text" | "select";
+    type: "text" | "select" | "number"  | "textarea";
     options?: { value: string; label: string }[]; // For select fields
 }
 
@@ -78,15 +79,18 @@ export type EditModalProps = {
     show: boolean;
     entity: EntityType | null;
     fields: FieldConfig[];
+    error?: string;
     onCancel: () => void;
     onConfirm: (id: number, data: Partial<User>) => void;
 }
 
 export type ListViewBlockProps = {
     jobData: Jobs[];
-    allSite: any;
-    allAssets: any;
+    allSite: { data: Sites }[];
+    allAssets: { data: Assets }[];
     statusOptions: any;
+    lastEditedJobId: number;
+    editJob: (job: Jobs) => void;
     deleteJob: (job: Jobs) => void;
 }   
 

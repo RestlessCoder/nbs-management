@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { CanAccess, useGetIdentity, useList, useMany, useParsed, useTable } from "@refinedev/core";
-import type { Jobs } from "../../types";
+import { CanAccess, useGetIdentity, useList, useMany, useParsed, useTable, useUpdate } from "@refinedev/core";
+import type { Assets, Jobs, Sites } from "../../types";
 import { ResendVerification } from "../../components/ResendVerification";
 import JobStatusSelect from "../../components/JobStatusSelect";
 
+import EditModal from "../../components/EditModal.tsx";
 import DeleteModal from "../../components/DeleteModal.tsx";
 import axios from "axios";
 import ListViewBlock from "../../components/ListViewBlock.tsx";
+import { getOptionClass, isWithinLast24Hours } from "../../utils/index.ts";
 
 const JobsList = () => {     
 
     const { params } = useParsed();
+    const { mutateAsync } = useUpdate();
     const searchFromUrl = params?.search;
 
     const { data: user } = useGetIdentity();
@@ -23,10 +26,41 @@ const JobsList = () => {
     const [listView, setListView] = useState(true);
 
     const [showDelete, setShowDelete] = useState(false);
+    const [showEdit, setShowEdit] = useState(false);
     const [selectedJob, setSelectedJob] = useState<Jobs | null>(null);
+    const [lastEditedJobId, setLastEditedJobId] = useState<number | null>(null);
+
+    const [errorMessage, setErrorMessage] = useState<string>("");
         
     const openDelete = (job: Jobs) => { setSelectedJob(job); setShowDelete(true); }
     const closeDelete = () => { setSelectedJob(null); setShowDelete(false); }
+
+    const openEdit = (job: Jobs) => { setSelectedJob(job); setShowEdit(true); }
+    const closeEdit = () => { setSelectedJob(null); setShowEdit(false); }
+
+    const handleEdit = async (id: number, data: Partial<Jobs>) => {
+        try {
+
+            await mutateAsync({
+                resource: "jobs",
+                id,
+                values: data,
+                meta: { withCredentials: true }, // optional if your dataProvider supports it
+            });
+    
+            setShowEdit(false);
+            closeEdit();
+            setLastEditedJobId(id);
+            refetch();
+        } catch (err) {
+            console.error("Error editing job:", err);
+
+            const errorMessage = JSON.parse((err as any)?.message || "{}")?.error || "Error editing jobs. Please try again.";
+
+            setErrorMessage(errorMessage);
+        }
+    }
+        
 
     const handleDelete = async (id: number) => {
         try {
@@ -63,7 +97,12 @@ const JobsList = () => {
         },
         // REMOVE initial sorters and filters to keep URL clean
         sorters: {
-            initial: []
+            initial: [
+                {
+                    field: "createdAt", 
+                    order: "desc",      
+                },
+            ],
         },
         filters: {
             initial: []
@@ -74,7 +113,8 @@ const JobsList = () => {
     // Cache siteIds to avoid unnecessary re-renders and API calls when jobData changes
     const siteIds = useMemo(() => {
         const ids = jobData?.map((job) => job.siteId);
-        return [...new Set(ids)]; // Removes duplicates
+        // Filter out null/undefined values
+        return [...new Set(ids.filter((id): id is number => id != null))];
     }, [jobData]);
     // Relation DB Site 
     const { 
@@ -91,10 +131,35 @@ const JobsList = () => {
         return sitesData ?? [];
     }, [sitesData]);
 
-     // Cache assetsIds to avoid unnecessary re-renders and API calls when jobData changes
-    const assetIds = useMemo(() => {
-        const ids = jobData?.map((job) => job.assetId);
-        return [...new Set(ids)]; // Removes duplicates
+    // Get all site value in assets db
+    const { 
+        result: { data: siteData }
+    } = useList({
+        resource: "sites/names",
+        pagination: { mode: "off" }, 
+        queryOptions: {
+            select: (result) => {
+                // 1. Get unique sites
+                const sites = [...new Set(result.data.map((a) => a).filter(Boolean))];
+
+                // 2. Sort sites in ascending order
+                return {
+                    data: sites.sort((a, b) => String(a).localeCompare(String(b))),
+                    total: sites.length,
+                };
+            },
+        },
+    });
+    
+    const dynamicSites = useMemo(() => {
+        return siteData ?? [];
+    }, [siteData]);
+
+    // Cache assetsIds to avoid unnecessary re-renders and API calls when jobData changes
+     const assetIds = useMemo(() => {
+        const ids = jobData?.map((job) => job.assetId) ?? [];
+        // Filter out null/undefined values
+        return [...new Set(ids.filter((id): id is number => id != null))];
     }, [jobData]);
     // Relation DB Asset 
     const { 
@@ -110,7 +175,6 @@ const JobsList = () => {
     const allAssets = useMemo(() => {
         return assetsData ?? [];
     }, [assetsData]);
-
 
     const handleCostChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -156,8 +220,23 @@ const JobsList = () => {
     // 2. Create an array [1, 2, 3...] for the buttons
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     
-    const allJobs = jobData ?? [];
+    const allJobs = useMemo(() => {
+           if (!jobData) return [];
+           
+           const list = [...jobData];
 
+           return list.sort((a, b) => {
+                if (a.id === lastEditedJobId) return -1;
+                if (b.id === lastEditedJobId) return 1;
+
+                const dateA = new Date(a.createdAt).getTime();
+                const dateB = new Date(b.createdAt).getTime();
+
+                return dateB - dateA; 
+            });
+        
+       }, [jobData, lastEditedJobId]);
+    
     // First load to keep the URL params clean
     useEffect(() => {
         const isNotInitialState = currentPage > 1 || filters.length > 0 || sorters.length > 0;
@@ -228,6 +307,27 @@ const JobsList = () => {
     
     const statusOptions = statusOptionsData ?? [];
 
+    // Get all site value in assets db
+    const { 
+        result: { data: assetNamesData }
+    } = useList({
+        resource: "assets/names",
+        pagination: { mode: "off" }, 
+        queryOptions: {
+            select: (result) => {
+                // 1. Get unique asset names
+                const assetNames = [...new Set(result.data.map((a) => a).filter(Boolean))];
+
+                // 2. Sort asset names in ascending order
+                return {
+                    data: assetNames.sort((a, b) => String(a).localeCompare(String(b))),
+                    total: assetNames.length,
+                };
+            },
+        },
+    });
+
+    const dynamicAssetNames = assetNamesData ?? [];
     
     return (
         <>
@@ -307,7 +407,7 @@ const JobsList = () => {
                                         value={filterValue}
                                         onChange={handleCostChange}
                                     >
-                                        <option value="all" selected>Filter Cost</option>
+                                        <option value="all">Filter Cost</option>
                                         <option key="low" value="low">
                                             Cost: Low to High
                                         </option>
@@ -330,20 +430,6 @@ const JobsList = () => {
                                 </div>
                         )}
 
-                        {   
-                            message && activeTab === "new" && (
-                                <div className="cell small-12">
-                                    <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>
-                                        {
-                                            message.length === 0 ?<p>No new Jobs in the last 7 days</p> : <p>{message}</p>
-                                        }
-                                    </div>
-                                </div>
-                          
-                            )
-                        }
-
-                        
                         {
                             user?.isVerified === false && (
                                 <div className="error-badge-container">
@@ -356,160 +442,236 @@ const JobsList = () => {
                                 </div>
                             )
                         }
+
+
+                        {   
+                            message && activeTab === "new" && (
+                                <div className="cell small-12">
+                                    <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>
+                                        {
+                                            message.length === 0 ?<p>No new Jobs in the last 7 days</p> : <p>{message}</p>
+                                        }
+                                    </div>
+                                </div>
+                          
+                            )
+                        }
                             
                         <div className="cell small-12">
-                            <div className="jobs-table">
-                                {listView ? (
-                                    <table className="jobs-table__content">
-                                        <thead className="jobs-table__header">
-                                            <tr className="jobs-table__row">
-                                                <th className="jobs-table__cell">Reference</th>
-                                                <th className="jobs-table__cell">Asset & Site</th>
-                                                <th className="jobs-table__cell">Description</th>
-                                                <th className="jobs-table__cell">Est. Cost</th>
-                                                <th className="jobs-table__cell">Status</th>
-                                                <th className="jobs-table__cell">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="jobs-table__body">
-                                            
-                                            {
-                                                tableLoading ? (
-                                                    [...Array(pageSize)].map((_, i) => (
-                                                    <tr key={`skel-${i}`}>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                        <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
-                                                    </tr>
-                                                ))
-                                                ) : (
-                                                    allJobs?.map((job) => {
+                            {
+                                user?.isVerified === true && 
+                                <div className="jobs-table">
+                                    {listView ? (
+                                        <table className="jobs-table__content">
+                                            <thead className="jobs-table__header">
+                                                <tr className="jobs-table__row">
+                                                    <th className="jobs-table__cell">Reference</th>
+                                                    <th className="jobs-table__cell">Asset & Site</th>
+                                                    <th className="jobs-table__cell">Description</th>
+                                                    <th className="jobs-table__cell">Est. Cost</th>
+                                                    <th className="jobs-table__cell">Status</th>
+                                                    <th className="jobs-table__cell">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="jobs-table__body">
+                                                
+                                                {
+                                                    tableLoading ? (
+                                                        [...Array(pageSize)].map((_, i) => (
+                                                        <tr key={`skel-${i}`}>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                            <td><div className="skeleton-line" style={{ width: '100%' }}></div></td>
+                                                        </tr>
+                                                    ))
+                                                    ) : (
+                                                        allJobs?.map((job) => {
 
-                                                        const site = allSite.find((s) => s.data?.id === job.siteId);
-                                                        const asset = allAssets.find((a) => a.data?.id === job.assetId);
-                                            
-                                                        return (    
+                                                            const site = allSite.find((s) => s.data?.id === job.siteId);
+                                                            const asset = allAssets.find((a) => a.data?.id === job.assetId);
 
-                                                            <tr key={job.id}>
-                                                                <td className="jobs-table__cell job-reference"><span className="block">{job.reference}</span></td>
-                                                                <td className="jobs-table__cell job-asset"><strong>{asset?.data.name}</strong>{" "}{site?.data.code}{" "}{site?.data.location}</td>
-                                                                <td className="jobs-table__cell job-description">{job.description}</td>
-                                                                <td className="jobs-table__cell job-cost">&#163;{job.cost}</td>
-                                                                <td className="jobs-table__cell job-status">
-                                                                    <div className="status-form-select">
-                                                                        <form action="" id="status">
+                                                            const isRecentlyCreated = isWithinLast24Hours(String(job.createdAt));
+                                                            
+                                                            return (    
+
+                                                                <tr key={job.id}>
+                                                                    <td className="jobs-table__cell job-reference"><span className="block">{job.reference}</span></td>
+                                                                    <td className="jobs-table__cell job-asset">
+                                                                
+                                                                        <strong>{asset?.data.name}</strong>{" "}{site?.data.code}{" "}<span className="custom-name">{site?.data.location}</span>
+                                                                    
+                                                                        {job.id === lastEditedJobId && (
+                                                                            <span className="edited-badge" style={{ display: "inline-block", marginRight: "0.35rem" }}>
+                                                                                Just Edited
+                                                                            </span>
+                                                                        )}    
+                                                                        {isRecentlyCreated && (
+                                                                            <span className="new-badge" style={{ display: "inline-block" }}>
+                                                                                New
+                                                                            </span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="jobs-table__cell job-description">{job.description}</td>
+                                                                    <td className="jobs-table__cell job-cost">&#163;{job.cost}</td>
+                                                                    <td className="jobs-table__cell job-status">
+                                                                        <div className="status-form-select">                                                                      
                                                                             <JobStatusSelect
                                                                                 job={job}
                                                                                 statusOptions={statusOptions}
-                                                                                onChange={() => {}}
+                                                                                onChange={(newStatus) => handleEdit(job.id, { status: newStatus as any })}
                                                                                 canEdit={false}
-                                                                            />
-                                                                        </form>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="jobs-table__cell job-action">
-                                                                    <CanAccess
-                                                                            resource="jobs"
-                                                                            action="delete"
-                                                                        >
-                                                                        <button 
-                                                                            className="button-circle-icon button-trash"
-                                                                            onClick={() => openDelete(job as Jobs)}
-                                                                        >
-                                                                            <i className="fas fa-trash-alt"></i>
-                                                                        </button>
-                            
-                                                                    </CanAccess>
-                                                                    {/* TODO list Edit Button */}
-                                                                    <button className="button-circle-icon button-edit">
-                                                                        <i className="far fa-edit icon"></i>
-                                                                    </button>
-                                                                </td>
-                                                            </tr>                                   
-                                                        )
-                                                    })
-                                                )
-                                            }
-
-                                        </tbody>
-                                    </table>
-                                ) : (
-                                    <div className="job-block-container">
-                                        <ListViewBlock 
-                                            jobData={allJobs as Jobs[]}
-                                            allSite={allSite}
-                                            allAssets={allAssets}
-                                            statusOptions={statusOptions}
-                                            deleteJob={openDelete}
-                                        />
-                                    </div>
-                                )}
+                                                                            />                                                                 
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="jobs-table__cell job-action">
+                                                                        <CanAccess
+                                                                                resource="jobs"
+                                                                                action="delete"
+                                                                            >
+                                                                            <button 
+                                                                                className="button-circle-icon button-trash"
+                                                                                onClick={() => openDelete(job as Jobs)}
+                                                                            >
+                                                                                <i className="fas fa-trash-alt"></i>
+                                                                            </button>
                                 
-
-                                {!tableLoading && totalCount > pageSize && 
-                            
-                                    <nav className="pagination-container">
-                                        {/* Previous Button */}
-                                        <button 
-                                            className="pagination-btn"
-                                            onClick={() => setCurrentPage(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                        >
-                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
-                                            </svg>
-                                        </button>
-
-                                        {/* Page Numbers */}
-                                        <div className="pagination-numbers">
-                                            {pages.map((page) => {
-                                                // Logic to show only current, first, last, and neighbors
-                                                if (
-                                                    page === 1 || 
-                                                    page === totalPages || 
-                                                    (page >= currentPage - 1 && page <= currentPage + 1)
-                                                ) {
-                                                    return (
-                                                        <button
-                                                            key={page}
-                                                            onClick={() => setCurrentPage(page)}
-                                                            className={`pag-num ${currentPage === page ? 'active' : ''}`}
-                                                        >
-                                                            {page}
-                                                        </button>
-                                                    );
-                                            }
-                                                // Show dots
-                                                if (page === currentPage - 2 || page === currentPage + 2) {
-                                                    return <span key={page} className="pag-dots">...</span>;
+                                                                        </CanAccess>
+                                                                        <button 
+                                                                            className="button-circle-icon button-edit"
+                                                                            onClick={() => openEdit(job as Jobs)}
+                                                                        >
+                                                                            <i className="far fa-edit icon"></i>
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>                                   
+                                                            )
+                                                        })
+                                                    )
                                                 }
-                                                return null;
-                                            })}
-                                        </div>
 
-                                        {/* Next Button */}
-                                        <button 
-                                            className="pagination-btn"
-                                            onClick={() => setCurrentPage(currentPage + 1)}
-                                            disabled={currentPage == totalPages}   
-                                        >
-                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
-                                            </svg>
-                                        </button>
-                                    </nav>
-                                }
-                            </div>
+                                            </tbody>
+                                        </table>
+                                    ) : (
+                                        <div className="job-block-container">
+                                            <ListViewBlock 
+                                                jobData={allJobs as Jobs[]}
+                                                allSite={allSite as { data: Sites }[]}
+                                                allAssets={allAssets as { data: Assets }[]}
+                                                statusOptions={statusOptions}
+                                                lastEditedJobId={lastEditedJobId as number}
+                                                editJob={openEdit}
+                                                deleteJob={openDelete}
+                                            />
+                                        </div>
+                                    )}
+                                    
+
+                                    {!tableLoading && totalCount > pageSize && 
+                                
+                                        <nav className="pagination-container">
+                                            {/* Previous Button */}
+                                            <button 
+                                                className="pagination-btn"
+                                                onClick={() => setCurrentPage(currentPage - 1)}
+                                                disabled={currentPage === 1}
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                                                </svg>
+                                            </button>
+
+                                            {/* Page Numbers */}
+                                            <div className="pagination-numbers">
+                                                {pages.map((page) => {
+                                                    // Logic to show only current, first, last, and neighbors
+                                                    if (
+                                                        page === 1 || 
+                                                        page === totalPages || 
+                                                        (page >= currentPage - 1 && page <= currentPage + 1)
+                                                    ) {
+                                                        return (
+                                                            <button
+                                                                key={page}
+                                                                onClick={() => setCurrentPage(page)}
+                                                                className={`pag-num ${currentPage === page ? 'active' : ''}`}
+                                                            >
+                                                                {page}
+                                                            </button>
+                                                        );
+                                                }
+                                                    // Show dots
+                                                    if (page === currentPage - 2 || page === currentPage + 2) {
+                                                        return <span key={page} className="pag-dots">...</span>;
+                                                    }
+                                                    return null;
+                                                })}
+                                            </div>
+
+                                            {/* Next Button */}
+                                            <button 
+                                                className="pagination-btn"
+                                                onClick={() => setCurrentPage(currentPage + 1)}
+                                                disabled={currentPage == totalPages}   
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
+                                                </svg>
+                                            </button>
+                                        </nav>
+                                    }
+                                </div>
+                }
                         </div>
 
                     </div>
                 </section>
             </div>
-          <DeleteModal 
+
+            <EditModal 
+                mode="JOB"
+                show={showEdit}
+                entity={selectedJob as Jobs}
+                fields={[
+                    {   name: "assetId", 
+                        label: "Asset Name", 
+                        type: "select",
+                        options: dynamicAssetNames.map(asset => ({
+                            value: String(asset.id), 
+                            label: asset.name
+                         }))
+                    },
+                    {
+                        name: "siteId", 
+                        label: "Site", 
+                        type: "select", 
+                        options: 
+                            dynamicSites.map(site => ({ 
+                                value: String(site.id), label: `${site.code} ${site.location}` 
+                            }))  
+                    },
+                    {
+                        name: "status",
+                        label: "Status",
+                        type: "select",
+                        options: statusOptions.map(status => ({
+                            value: String(status), 
+                            colorOptions: getOptionClass(String(status)),
+                            label: status
+                        })) 
+                    },
+                    { name: "cost", label: "Cost", type: "number" },         
+                    { name: "description", label: "Description", type: "textarea" }, 
+                ]}
+                error={errorMessage}
+                onCancel={() => setShowEdit(false)}
+                onConfirm={handleEdit} 
+            />
+            
+            <DeleteModal 
                 show={showDelete} 
                 entity={selectedJob as Jobs} 
                 onCancel={() => setShowDelete(false)} 

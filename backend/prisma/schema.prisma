@@ -81,6 +81,7 @@ model User {
   userFavoriteSites    UserFavoriteSite[]
   site                 Site?              @relation(fields: [siteId], references: [id])
 
+  @@unique([name])
   @@index([siteId])
   @@map("users")
 }

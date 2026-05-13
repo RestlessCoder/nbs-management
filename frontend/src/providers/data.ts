@@ -30,8 +30,6 @@ const options: CreateDataProviderOptions = {
 
            return query;
         },
-
-    
         mapResponse: async (response) => {
 
             const clonedResponse = response.clone(); 
@@ -46,7 +44,16 @@ const options: CreateDataProviderOptions = {
 
             return payload.pagination?.totalItems ?? payload.data?.length ?? 0;
         }
-    }
+    },    
+    update: {
+        getEndpoint: ({ resource, id }) => `${resource}/${id}`,
+        getRequestMethod: () => "put", // force PUT instead of PATCH
+        mapResponse: async (response) => {
+            const clonedResponse = response.clone();
+            const payload = await clonedResponse.json();
+            return payload.data;
+        },
+    },
 }
 
 

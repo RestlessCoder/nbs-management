@@ -1,25 +1,58 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { type Assets } from "../../types";
 import { DynamicNavFilter } from "../../components/DynamicNavFilter.tsx";
-import { CanAccess, useList, useMany, useParsed, useTable } from "@refinedev/core";
+import { CanAccess, useList, useMany, useParsed, useTable, useUpdate } from "@refinedev/core";
 import { formatEnum } from "../../utils/index.ts";
 
+import EditModal from "../../components/EditModal";
 import DeleteModal from "../../components/DeleteModal.tsx";
 import axios from "axios";
+import { FALLBACK_ASSET_TYPES, FALLBACK_YEARS } from "../../constants/index.tsx";
 
-const AssetsList = () => {      
+const AssetsList = () => {     
     const { params } = useParsed();
+    const { mutateAsync } = useUpdate();
     const searchFromUrl = params?.search;
     const [filterValue, setFilterValue] = useState("");
     const [tableLoading, setTableLoading] = useState(true);
     const [userHasInteracted, setUserHasInteracted] = useState(false);
 
     const [showDelete, setShowDelete] = useState(false);
+    const [showEdit, setShowEdit] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState<Assets | null>(null);
+    const [lastEditedAssetId, setLastEditedAssetId] = useState<number | null>(null);
+
+    const [errorMessage, setErrorMessage] = useState<string>("");
     
     const openDelete = (asset: Assets) => { setSelectedAsset(asset); setShowDelete(true); }
     const closeDelete = () => { setSelectedAsset(null); setShowDelete(false); }
 
+    const openEdit = (asset: Assets) => { setSelectedAsset(asset); setShowEdit(true); }
+    const closeEdit = () => { setSelectedAsset(null); setShowEdit(false); }
+
+    const handleEdit = async (id: number, data: Partial<Assets>) => {
+        try {
+
+            await mutateAsync({
+                resource: "assets",
+                id,
+                values: data,
+                meta: { withCredentials: true }, // optional if your dataProvider supports it
+            });
+    
+            setShowEdit(false);
+            closeEdit();
+            setLastEditedAssetId(id);
+            refetch();
+        } catch (err) {
+            console.error("Error editing asset:", err);
+
+            const errorMessage = JSON.parse((err as any)?.message || "{}")?.error || "Error editing asset. Please try again.";
+
+            setErrorMessage(errorMessage);
+        }
+    }
+    
     const handleDelete = async (id: number) => {
         try {
             await axios.delete(`${import.meta.env.VITE_BACKEND_BASE_URL}/assets/${id}`, 
@@ -32,7 +65,8 @@ const AssetsList = () => {
             // Refetch the asset list after deletion
             refetch();
         } catch (err) {
-            console.error("Error deleting asset:", err);
+            const errorMessage = JSON.parse((err as any)?.message || "{}")?.error || "Error deleting asset. Please try again.";
+            setErrorMessage(errorMessage);
         }
     };
 
@@ -80,7 +114,7 @@ const AssetsList = () => {
         return [...new Set(ids)]; // Removes duplicates
     }, [assetsData]);
 
-     // Get all years value in assets db
+    // Get all years value in assets db
     const { 
         result: { data: assetYearsData }
     } = useList({
@@ -101,6 +135,26 @@ const AssetsList = () => {
     });
 
     const dynamicYears = assetYearsData ?? [];
+
+    const { result: { data: optionsAssetsData } } = useList({
+        resource: "assets",
+        pagination: { mode: "off" }, 
+    });
+
+    const uniqueYears = useMemo(() => {
+        const years = optionsAssetsData?.map((a) => a.year).filter(Boolean) ?? [];
+        // merge with fallback and deduplicate
+        return [...new Set([...years, ...FALLBACK_YEARS])].sort((a, b) => a - b);
+    }, [optionsAssetsData]);
+
+    const uniqueTypes = useMemo(() => {
+    const types = optionsAssetsData?.map((a) => a.type).filter(Boolean) ?? [];
+        // merge with fallback and deduplicate
+        return [...new Set([...types, ...FALLBACK_ASSET_TYPES])].sort((a, b) => a.localeCompare(b));
+    }, [optionsAssetsData]);
+
+    const allYears = uniqueYears;
+    const allTypes = uniqueTypes;
     
     const handleYearChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -139,8 +193,19 @@ const AssetsList = () => {
     // 2. Create an array [1, 2, 3...] for the buttons
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     
-    const allAssets = assetsData ?? [];
-    
+
+    const allAssets = useMemo(() => {
+        if (!assetsData) return [];
+        
+        const list = [...assetsData];
+
+        return list.sort((a, b) => {
+            if (a.id === lastEditedAssetId) return -1;
+            if (b.id === lastEditedAssetId) return 1;
+            return a.name.localeCompare(b.name); // or your default sort
+        });
+    }, [assetsData, lastEditedAssetId]);
+
     useEffect(() => {
         // If the API is loading, we are definitely loading
         if (isLoading) {
@@ -163,8 +228,8 @@ const AssetsList = () => {
             setUserHasInteracted(true);
         }
     }, [currentPage, filters, sorters]);
-    
-     // SEARCH SYNC FROM URL
+
+    // SEARCH SYNC FROM URL
     useEffect(() => {
         setFilters(
             [
@@ -236,7 +301,12 @@ const AssetsList = () => {
                                                 <th className="assets-table__cell">Manufacturer</th>
                                                 <th className="assets-table__cell">Year</th>
                                                 <th className="assets-table__cell">Quick Fixes</th>
-                                                <th className="assets-table__cell">Action</th>
+                                                <CanAccess
+                                                    resource="assets"
+                                                    action="delete"
+                                                >
+                                                    <th className="assets-table__cell">Actions</th>
+                                                </CanAccess>                                           
                                             </tr>
                                         </thead>
                                         <tbody className="assets-table__body">
@@ -263,12 +333,19 @@ const AssetsList = () => {
                                                         //console.log("This is site", allSite.map((item) => item.data.id))
                                                         return (
                                                             <tr key={asset.id}>
-                                                                <td className="assets-table__cell asset-name">{asset.name}</td>
+                                                                <td className="assets-table__cell asset-name">
+                                                                     <span className="custom-name">{asset.name}</span>
+                                                                    {asset.id === lastEditedAssetId && (
+                                                                        <span className="edited-badge">
+                                                                            Just Edited
+                                                                        </span>
+                                                                    )}    
+                                                                </td>
                                                                 <td className="assets-table__cell asset-type">{formatEnum(asset.type)}</td>
                                                                 <td className="assets-table__cell asset-site">
                                                                     {`${site?.data.code} ${site?.data.location}` || `Site #${asset.siteId}`}
                                                                 </td>
-                                                                <td className="assets-table__cell asset-manufacturer">{formatEnum(asset.manufacturer)}</td>
+                                                                <td className="assets-table__cell asset-manufacturer">{asset.manufacturer}</td>
                                                                 <td className="assets-table__cell asset-year">{asset.year}</td>
                                                                 <td className="assets-table__cell asset-fixes">
                                                                     <span className="block">{asset.quickFixes}</span>
@@ -289,8 +366,12 @@ const AssetsList = () => {
                                                                     <CanAccess
                                                                         resource="assets"
                                                                         action="edit"
+                                                                        params={{ id: asset.id }}
                                                                         >
-                                                                        <button className="button-circle-icon button-edit">
+                                                                        <button 
+                                                                            className="button-circle-icon button-edit"
+                                                                            onClick={() => openEdit(asset as Assets)}
+                                                                            >
                                                                             <i className="far fa-edit icon"></i>
                                                                         </button>
                                                                     </CanAccess>
@@ -363,8 +444,42 @@ const AssetsList = () => {
                     </div>
                 </section>
             </div>
+
+            <EditModal 
+                mode="ASSET"
+                show={showEdit}
+                entity={selectedAsset as Assets}
+                fields={[
+                    { name: "name", label: "Asset Name", type: "text" },
+                    {
+                        name: "type", 
+                        label:"Asset Type", 
+                        type: "select", 
+                        options: 
+                            allTypes.map(type => ({ 
+                                value: String(type), label: type 
+                        }))
+                    },
+                    {
+                        name: "siteId", 
+                        label: "Site", 
+                        type: "select", 
+                        options: 
+                            allSite.map(site => ({ 
+                                value: String(site.data.id), label: `${site.data.code} ${site.data.location}` 
+                            }))
+                    },
+                    { name: "manufacturer", label: "Manufacturer", type: "text" },
+                    { name: "year", label: "Year", type: "select", options: allYears.map(year => ({ value: String(year), label: String(year) })) },
+                    { name: "quickFixes", label: "Quick Fixes", type: "number" },             
+                ]}
+                error={errorMessage}
+                onCancel={() => setShowEdit(false)}
+                onConfirm={handleEdit} 
+            />
+
             <DeleteModal 
-                show={showDelete} 
+                show={showDelete}
                 entity={selectedAsset as Assets} 
                 onCancel={() => setShowDelete(false)} 
                 onConfirm={handleDelete} 

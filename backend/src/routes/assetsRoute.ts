@@ -88,6 +88,75 @@ router.get("/", async (req, res) => {
 });
 
 /**
+ * PUT /api/assets/:id
+ * Handles: Updating an asset by its ID,
+ */
+router.put("/:id", requireAuth, requireRole(['ADMIN', 'USER']), async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const {
+            name,
+            type,
+            siteId,
+            manufacturer,
+            year,
+            quickFixes,
+        } = req.body;
+        
+        const updatedAssets = await prisma.asset.update({
+            where: { id: Number(id) },
+            data: {
+                name,
+                type,
+                siteId,
+                manufacturer,
+                year,
+                quickFixes,
+            }, include: { site: true } // Include relation for the detail views
+        });
+
+        if (!updatedAssets) return res.status(404).json({ error: "Asset not found" });
+
+        res.json({
+            message: "Assets updated successfully",
+            data: updatedAssets,
+        });
+
+    } catch (err) {
+        console.error("Error updating assets:", err);
+
+        if ((err as any)?.code === "P2002") {
+            return res.status(400).json({
+                error: "Asset name is already taken.",
+            });
+        }
+
+        res.status(500).json({ error: "Failed to update asset" });
+    }
+});
+
+
+/**
+ * GET /api/assets/names
+ * Handles: Fetching only the asset names for dropdowns 
+ */
+router.get("/names", async (req, res) => {
+   try {
+        const assets = await prisma.asset.findMany({
+            select: { id: true, name: true }, 
+            orderBy: { name: "asc" },        
+        });
+
+        res.json({ data: assets });
+    } catch (error) {
+        console.error("Error fetching asset names:", error);
+        res.status(500).json({ error: "Failed to fetch asset names" });
+    }
+})
+
+
+/**
  * DELETE /api/assets/:id
  * Handles: Deleting an asset by its ID,
  */

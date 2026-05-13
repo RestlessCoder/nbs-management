@@ -143,6 +143,48 @@ async function generateReference() {
 });
 
 /**
+ * PUT /api/jobs/:id
+ * Handles: Updating a job by its ID,
+ */
+router.put("/:id", requireAuth, requireRole(['ADMIN', 'USER']), async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const {
+            assetId,
+            siteId,
+            status,
+            cost,
+            description,
+        } = req.body;
+        
+        const updatedJobs = await prisma.job.update({
+            where: { id: Number(id) },
+            data: {
+                assetId,
+                siteId,
+                status,
+                cost,
+                description,
+            }, include: { site: true, asset: true } // Include relation for the detail views
+        });
+
+        if (!updatedJobs) return res.status(404).json({ error: "Job not found" });
+
+        res.json({
+            message: "Job updated successfully",
+            data: updatedJobs,
+        });
+
+    } catch (err) {
+        console.error("Error updating jobs:", err);
+
+        res.status(500).json({ error: "Failed to update job" });
+    }
+});
+
+
+/**
  * DELETE /api/jobs/:id
  * Handles: Deleting a job by its ID,
  */
@@ -152,7 +194,7 @@ router.delete("/:id", requireAuth, requireRole(['ADMIN']), async (req, res) => {
     try {
         const deletedJob = await prisma.job.delete({
             where: { id: Number(id) },
-            include: { site: true } // Include relation for the detail view
+            include: { site: true, asset: true } // Include relation for the detail view
         });
 
         if (!deletedJob) return res.status(404).json({ error: "Job not found" });

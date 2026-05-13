@@ -107,6 +107,13 @@ router.put("/:id", requireAuth, requireRole(['ADMIN', 'USER']), async (req, res)
 
     } catch (err) {
         console.error("Error updating user:", err);
+
+        if ((err as any)?.code === "P2002") {
+            return res.status(400).json({
+                error: "Name is already taken.",
+            });
+        }
+
         res.status(500).json({ error: "Failed to update user" });
     }
 });

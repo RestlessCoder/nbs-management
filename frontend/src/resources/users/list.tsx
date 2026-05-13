@@ -1,4 +1,4 @@
-import { useTable, useParsed, useGetIdentity, useMany, Link, CanAccess, useList } from "@refinedev/core"
+import { useTable, useParsed, useGetIdentity, useMany, Link, CanAccess, useList, useUpdate } from "@refinedev/core"
 import { useEffect, useMemo, useState } from "react";
 import { ResendVerification } from "../../components/ResendVerification";
 import DeleteModal from "../../components/DeleteModal";
@@ -8,6 +8,7 @@ import EditModal from "../../components/EditModal";
 
 const UserList = () => {      
     const { data: user } = useGetIdentity();
+    const { mutateAsync } = useUpdate();
     const { params } = useParsed();
     const searchFromUrl = params?.search;
     const [tableLoading, setTableLoading] = useState(true);
@@ -16,6 +17,8 @@ const UserList = () => {
     const [showEdit, setShowEdit] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [lastEditedUserId, setLastEditedUserId] = useState<number | null>(null);
+
+    const [errorMessage, setErrorMessage] = useState<string>("");
     
     const openDelete = (user : User) => { setSelectedUser(user); setShowDelete(true); }
     const closeDelete = () => { setSelectedUser(null); setShowDelete(false); }
@@ -42,10 +45,12 @@ const UserList = () => {
     const handleEdit = async (id: number, data: Partial<User>) => {
         try {
 
-            await axios.put(`${import.meta.env.VITE_BACKEND_BASE_URL}/users/${id}`, 
-            data,
-            { withCredentials: true}
-        );
+            await mutateAsync({
+                resource: "users",
+                id,
+                values: data,
+                meta: { withCredentials: true }, // optional if your dataProvider supports it
+            });
 
             setShowEdit(false);
             closeEdit();
@@ -53,6 +58,9 @@ const UserList = () => {
             refetch();
         } catch (err) {
             console.error("Error editing user:", err);
+
+            const errorMessage = JSON.parse((err as any)?.message || "{}")?.error || "Error editing user. Please try again.";
+            setErrorMessage(errorMessage);
         }
     }
 
@@ -124,6 +132,7 @@ const UserList = () => {
     // 2. Create an array [1, 2, 3...] for the buttons
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+    
     const allUsers = useMemo(() => {
         if (!userData) return [];
         
@@ -202,7 +211,7 @@ const UserList = () => {
     
     const dynamicSites = siteData ?? [];
 
-    
+
     return (
         <>
             <div className="body-dashboard generic-padding bg--whiteSmoke">
@@ -302,7 +311,7 @@ const UserList = () => {
                                                                             alt={user?.gender && user.gender.toLowerCase() || "user"} />
                                                                     </span>
                                                                     <span className="user-name">
-                                                                        <span className="text-position">{user.name}</span>
+                                                                        <span className="text-position custom-name">{user.name}</span>
                                                                     
                                                                         {user.id === lastEditedUserId && (
                                                                             <span className="edited-badge">
@@ -344,7 +353,7 @@ const UserList = () => {
                                                                     <CanAccess
                                                                         resource="users"
                                                                         action="edit"
-                                                                        params={{ id: user.id }}
+                                                                        params={{ id: user?.id }}
                                                                         >
                                                                         <button 
                                                                             className="button-circle-icon button-edit"
@@ -435,14 +444,16 @@ const UserList = () => {
                         { value: "GUY", label: "GUY" },
                         { value: "GIRL", label: "GIRL" },
                     ]},
-                    { name: "siteId", 
-                      label: "Site", 
-                      type: "select", 
-                      options: dynamicSites.map(site => ({ 
-                        value: String(site.id), label: site.name })
-                    ) 
+                    { 
+                        name: "siteId", 
+                        label: "Site", 
+                        type: "select", 
+                        options: dynamicSites.map(site => ({ 
+                            value: String(site.id), label: site.name 
+                        }))
                     },
                 ]}
+                error={errorMessage}
                 onCancel={() => setShowEdit(false)}
                 onConfirm={handleEdit} 
             />

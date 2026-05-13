@@ -58,5 +58,11 @@ export function formatNumberUK(num: number) {
   return num.toLocaleString("en-GB");
 }
 
+export function isWithinLast24Hours(dateString: string) {
+    const timestamp = new Date(dateString).getTime();
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
 
+    return (now - timestamp) <= oneDay && (now - timestamp) >= 0;
+}
 

@@ -1,6 +1,6 @@
 import express from "express";
 import { prisma } from "../../lib/prisma.ts";
-import { requireAuth, requireVerified } from "../middleware/auth.ts";
+import { requireAuth, requireRole, requireVerified } from "../middleware/auth.ts";
 
 const router = express.Router();
 
@@ -97,12 +97,12 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
 
 /**
  * GET /api/sites/names
- * Handles: Fetching only the names for dropdowns 
+ * Handles: Fetching only the site names, codes, and locations for dropdowns 
  */
 router.get("/names", async (req, res) => {
    try {
         const sites = await prisma.site.findMany({
-            select: { id: true, name: true }, 
+            select: { id: true, name: true, code: true, location: true}, 
             orderBy: { name: "asc" },        
         });
 
@@ -112,6 +112,54 @@ router.get("/names", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch site names" });
     }
 })
+
+/**
+ * PUT /api/users/:id
+ * Handles: Updating a user by its ID,
+ */
+router.put("/:id", requireAuth, requireRole(['ADMIN', 'USER']), async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const {
+            name,
+            entity,
+            category,
+            location,
+            budget,
+        } = req.body;
+        
+
+        const updatedSite = await prisma.site.update({
+            where: { id: Number(id) },
+            data: {
+                name,
+                entity,
+                category,
+                location,
+                budget,
+            },
+        });
+
+        if (!updatedSite) return res.status(404).json({ error: "Site not found" });
+
+        res.json({
+            message: "Site updated successfully",
+            data: updatedSite,
+        });
+
+    } catch (err) {
+        console.error("Error updating site:", err);
+
+        if ((err as any)?.code === "P2002") {
+            return res.status(400).json({
+                error: "Site name is already taken.",
+            });
+        }
+
+        res.status(500).json({ error: "Failed to update site" });
+    }
+});
 
 /**
  * GET /api/sites/:id
