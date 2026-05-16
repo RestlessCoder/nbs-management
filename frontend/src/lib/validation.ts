@@ -21,7 +21,10 @@ export const RegisterSchema = z.object({
               ),
   confirmPassword: z.string().min(1, { message: "Confirm Password is required"}),
   fullName: z.string().min(1, { message: "Full Name is required"}).max(50, { message: "Full Name must no more than 50 characters"}),
-  siteId: z.number().min(1, { message: "Please select a site" }),
+  siteId: z.preprocess(
+    (val) => val === "" ? null : Number(val),
+    z.number({ message: "Site must be selected" }).nullable()
+  ) as unknown as z.ZodNullable<z.ZodNumber>,
   gender: z.enum(["GUY", "GIRL"], {
     error: "Selection is Required.",
   }),

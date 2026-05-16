@@ -12,6 +12,8 @@ const TopSearchBar = ({ user } : { user: User }) => {
 
   const [searchQuery, setSearchQuery] = useState(params?.search || "");
 
+  const dashboardUrl = window.location.pathname;
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -33,22 +35,26 @@ const TopSearchBar = ({ user } : { user: User }) => {
 
   return (
     <div className="top-dashboard-bar">
-        <div className="searchform-wrapper">
-            <div className="searchform">
-                <input 
-                   className="searchform__input" 
-                   type="text" 
-                   placeholder={`Search ${capitalizeString(currentResource)|| ""}`} 
-                   value={searchQuery}
-                   onChange={handleSearch} 
-                />
-                <button className="searchform__button">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                </button>
-            </div>
+        <div className={`searchform-wrapper ${dashboardUrl === "/" ? "searchform-wrapper--custom" : ""}`}>
+            { 
+              dashboardUrl !== "/" && 
+
+              <div className="searchform">
+                  <input 
+                    className="searchform__input" 
+                    type="text" 
+                    placeholder={`Search ${capitalizeString(currentResource)|| ""}`} 
+                    defaultValue={searchQuery}
+                    onChange={handleSearch} 
+                  />
+                  <button className="searchform__button">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                  </button>
+              </div>
+        }
         </div>
         <div className="user-details">
             <div className="user-details__image">

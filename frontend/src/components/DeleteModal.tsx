@@ -12,7 +12,7 @@ const DeleteModal = ({
     const displayName = 'name' in entity ? entity.name : entity.reference;
 
     return (
-         <div className="modal">
+        <div className={`modal ${show ? "show" : ""}`}>
             <div className="modal-content">
                 <h3>Confirm Deletion</h3>
                 <p>

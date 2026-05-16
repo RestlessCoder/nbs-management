@@ -8,13 +8,11 @@ const JobStatusSelect = ({
     canEdit
 }: JobStatusSelectProps) => {
 
-
   return (
     <select 
-      id="status-select" 
       name="status"
-      className={`custom-select ${getOptionClass(String(job.status))}`} // color applied to select itself
-      defaultValue={job.status}
+      className={`custom-select custom-select--status ${getOptionClass(String(job.status))}`} // color applied to select itself
+      value={job.status}
       onChange={(e) => onChange?.(e.target.value)} 
       disabled={!canEdit}
     >   

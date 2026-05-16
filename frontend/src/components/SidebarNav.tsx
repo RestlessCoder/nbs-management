@@ -6,6 +6,7 @@ import { useState } from "react";
 const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
     const { mutate: logout } = useLogout();
     const { menuItems, selectedKey } = useMenu();
+    const [toggleMobileMenu, setToggleMobileMenu] = useState(false);
     const [isLightMode, setIsLightMode] = useState(false);
 
     const toggleLightMode = () => {
@@ -14,7 +15,10 @@ const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
     
     return (
         <>
-            <div className="main-sidebar-left" style={isLightMode ? { backgroundColor: "#fff" } : { backgroundColor: "#B1142C" }}>
+            <div 
+                className={`main-sidebar-left ${toggleMobileMenu ? 'main-sidebar-left--active active' : ""}`} 
+                style={isLightMode ? { backgroundColor: "#fff" } : { backgroundColor: "#B1142C" }}
+            >
                 <div className={`sidebar-dashboard ${isLightMode ? "light" : ""}`}>
                     <div className="main-logo">
                         <img className="main-logo-image" 
@@ -32,17 +36,17 @@ const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
                     </div>
                     <nav className={`dashboard-buttons pb--64 ${isLightMode ? "light" : ""}`}>
                         <ul>
-                        {
-                            menuItems.map((item) => (
-                                <li key={item.key} className={item.key === selectedKey ? "is-active" : ""}>
-                                    <Link to={item.route ?? "/"}
-                                    >
-                                        {item.meta?.icon !== undefined && item.meta.icon}   
-                                        {item.meta?.label}
-                                    </Link>
-                                </li>
-                            ))                 
-                        }
+                            {
+                                menuItems.map((item) => (
+                                    <li key={item.key} className={item.key === selectedKey ? "is-active" : ""}>
+                                        <Link to={item.route ?? "/"}
+                                        >
+                                            {item.meta?.icon !== undefined && item.meta.icon}   
+                                            {item.meta?.label}
+                                        </Link>
+                                    </li>
+                                ))                 
+                            }
                         </ul>
                     </nav>
 
@@ -78,6 +82,13 @@ const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
                         </span>
                     </div>
                 </div>
+            </div>
+            <div className="mobile-button__menu-bar hide-for-xmedium">
+                <i 
+                    className={`mobile-button__menu-bar-trigger fa ${toggleMobileMenu ? 'fa-times' : 'fa-bars'}`}
+                    onClick={() => setToggleMobileMenu(!toggleMobileMenu)}
+                >
+                </i>
             </div>
         </>
         

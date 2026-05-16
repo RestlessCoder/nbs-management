@@ -263,7 +263,7 @@ const ReportFaultForm = ({
                                                 type="number" 
                                                 id="quick-fixes" 
                                                 {...register("quickFixes", { valueAsNumber: true })} 
-                                                value={quickFixes}
+                                                value={quickFixes ?? ""}
                                                 min={0}
                                                 max={5}
                                                 step={1}

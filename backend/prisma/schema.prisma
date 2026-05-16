@@ -33,7 +33,6 @@ model Site {
   entity      String
   category    String
   budget      Float
-  isFavorite  Boolean            @default(false) @map("is_favorite")
   createdAt   DateTime           @default(now()) @map("created_at")
   updatedAt   DateTime?          @updatedAt @map("updated_at")
   assets      Asset[]
@@ -55,7 +54,6 @@ model Job {
   assetId     Int?      @map("asset_id")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime? @updatedAt @map("updated_at")
-  quickFixes  Int       @default(0) @map("quick_fixes")
   asset       Asset?    @relation(fields: [assetId], references: [id])
   site        Site?     @relation(fields: [siteId], references: [id])
 

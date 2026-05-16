@@ -5,11 +5,9 @@ import {
   Outlet, 
   Navigate
 } from "react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import '../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
 import './App.css';
-import $ from 'jquery';
-import 'foundation-sites';
 
 import DashboardPage from "./pages/DashboardPage.tsx";
 import AssetsList from "./resources/assets/list.tsx";
@@ -69,10 +67,6 @@ const AppLayout = () => {
 };
 function App() {
   
-  useEffect(() => {
-    $(document).foundation();
-  }, []);
-
   return (
     <BrowserRouter>
     <Refine
