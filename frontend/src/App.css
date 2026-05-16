@@ -403,6 +403,48 @@ html, body {
   margin-bottom:0rem;
 }
 
+.button-favourite {
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #888; /* default grey */
+}
+
+.button-favourite.liked {
+  color: red; /* when favorited */
+}
+
+/* Hover effect: scale up slightly */
+.button-favourite:hover {
+  transform: scale(1.2);
+  color: #e74c3c; /* brighter red on hover */
+}
+
+.button-edit {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.button-edit:hover {
+  transform: scale(1.2);
+}
+
+.button-edit:active {
+  transform: scale(0.9);
+}
+
+/* Click (active) effect: shrink briefly */
+.button-favourite:active {
+  transform: scale(0.9);
+}
+
+/* Optional: add a "pop" animation when toggled */
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.button-favourite.liked i {
+  animation: pop 0.3s ease;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }

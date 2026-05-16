@@ -21,7 +21,8 @@ router.get("/", async (req, res) => {
         search = '', 
         _sort = 'createdAt', 
         _order = 'desc',
-        recent = false
+        recent = false,
+        quickFixes = false
     } = req.query;
 
     // HANDLE REGULAR LIST (Pagination) 
@@ -48,7 +49,10 @@ router.get("/", async (req, res) => {
                 createdAt: {
                     gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) // last 1 days
                 }
-            } : {}
+            } : {},
+            quickFixes === 'true' ? {
+                asset: { quickFixes: { gt: 1 } }
+            } : {},
         ]
     };
 
@@ -63,6 +67,7 @@ router.get("/", async (req, res) => {
                 skip,
                 take,
                 orderBy,
+                include: { asset: true }
             }),
 
             prisma.job.count({ where }),
@@ -141,6 +146,7 @@ async function generateReference() {
     res.status(500).json({ error: "Failed to create job" });
   }
 });
+
 
 /**
  * PUT /api/jobs/:id

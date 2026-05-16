@@ -20,9 +20,9 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
         limit = 10,
         search = '',
         _sort = 'createdAt', 
-        _order = 'desc' 
+        _order = 'desc',
+        //favorited = false, // Add query to filter by favorites
     } = req.query;
-    
     
     // HANDLE useMany (Filtering by ID) 
     if (id) {
@@ -33,10 +33,11 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
 
         const sites = await prisma.site.findMany({
             where: {
-                id: { in: idArray }
+                id: { in: idArray },
+                //...(favorited && { favoritedBy: { some: { userId: req.user?.id } } }),
             },
             // This pulls and include in the related assets array
-            include: { assets: true },
+            include: { assets: true, favoritedBy: true },
         });
 
         // Refine expects the result wrapped in { data: [...] }
@@ -58,7 +59,8 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
               { category: { contains: String(search), mode: 'insensitive' as const } },
             ],
         }),
-        
+        // Only return favorited sites if ?favorited=true is set
+        //...(favorited && { favoritedBy: { some: { userId: req.user?.id } } }),
     };
 
     const orderBy = {
@@ -66,20 +68,28 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
     };
 
     try {
+
         const [sites, totalCount] = await prisma.$transaction([
         prisma.site.findMany({
             where,
-            skip,
+            skip, 
             take,
             orderBy,
+            include: { favoritedBy: true }
         }),
             prisma.site.count({ where }),
         ]);
 
+        // Add isFavorited flag to each site based on the current user's favorites
+        const sitesWithFlag = sites.map(site => ({
+            ...site,
+            isFavorited: site.favoritedBy.some(fav => fav.userId === req.user?.id),
+        }));
+
         const totalPages = Math.ceil(totalCount / take);
 
         res.json({
-            data: sites,
+            data: sitesWithFlag,
             pagination: {
                 currentPage: parseInt(String(page)),
                 totalPages,
@@ -94,6 +104,27 @@ router.get("/", requireAuth, requireVerified, async (req, res) => {
     }
 
 })
+
+/**
+ * GET /api/sites/favourites
+ * Handles: Fetching all favorited sites for the authenticated user
+ */
+router.get("/favourites", requireAuth, async (req, res) => {
+    const sites = await prisma.site.findMany({
+        where: { favoritedBy: { some: { userId: req.user?.id } } },
+        include: { assets: true, favoritedBy: true },
+        orderBy: { createdAt: "desc" },
+    });
+
+    // Add isFavorited flag to each site based on the current user's favorites
+    const sitesUserFlag = sites.map(site => ({
+        ...site,
+        isFavorited: site.favoritedBy.some(fav => fav.userId === req.user?.id),
+    }));
+
+    res.json({ data: sitesUserFlag });
+  
+});
 
 /**
  * GET /api/sites/names
@@ -114,8 +145,8 @@ router.get("/names", async (req, res) => {
 })
 
 /**
- * PUT /api/users/:id
- * Handles: Updating a user by its ID,
+ * PUT /api/sites/:id
+ * Handles: Updating a site by its ID,
  */
 router.put("/:id", requireAuth, requireRole(['ADMIN', 'USER']), async (req, res) => {
     const { id } = req.params;
@@ -179,5 +210,51 @@ router.get("/:id", async (req, res) => {
         res.status(500).json({ error: "Invalid ID or Server Error" });
     }
 });
+
+
+/**
+ * POST /api/sites/favorites/toggle
+ * Expects { siteId: number } in the body
+ */
+router.post("/favorites/toggle", requireAuth, async (req, res) => {
+    try {
+        const { siteId } = req.body;
+        const userId = req.user?.id; 
+
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        // 1. Check if it's already a favorite
+        const existingFavorite = await prisma.userFavoriteSite.findUnique({
+            where: {
+                userId_siteId: {
+                    userId: userId,
+                    siteId: Number(siteId),
+                },
+            },
+        });
+
+        if (existingFavorite) {
+            // 2. If it exists, remove it (unfavorite)
+            await prisma.userFavoriteSite.delete({
+                where: { id: existingFavorite.id },
+            });
+            return res.json({ data: { message: "Removed from favorites", isFavorite: false } });
+        } else {
+            // 3. If it doesn't exist, create it
+            await prisma.userFavoriteSite.create({
+                data: {
+                    userId: userId,
+                    siteId: Number(siteId),
+                },
+            });
+            
+            return res.json({ data: { message: "Added to favorites", isFavorite: true } });
+        }
+    } catch (err) {
+        console.error("Favorite Error:", err);
+        return res.status(500).json({ error: "Failed to update favorite status" });
+    }
+});
+
 
 export default router;

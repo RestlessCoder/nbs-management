@@ -1,5 +1,6 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { prisma } from "../../lib/prisma";
+import { requireAuth } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -12,9 +13,14 @@ const router = express.Router();
  * - Single site fetch by ID (/api/dashboard/sites/:id)
  * - Error handling for missing or invalid site IDs
  */
-router.get("/grouped-sites", async (req, res) => {
+router.get("/grouped-sites", requireAuth, async (req, res) => {
     try {
+        if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
+        const { id: userId, role, siteId } = req.user;
+
         const sites = await prisma.site.findMany({
+            where: role === "ADMIN" ? {} : { id: siteId },
             include: {
                 assets: true, // include all assets for the site
                 jobs: true,   // include all jobs for the site
@@ -40,8 +46,11 @@ router.get("/grouped-sites", async (req, res) => {
 router.get("/sites/:id", async (req, res) => {
     try {
         const siteId = parseInt(req.params.id, 10);
+
         const site = await prisma.site.findUnique({
-            where: { id: siteId },
+            where: { 
+                id: siteId, 
+            },
             include: {
                 assets: true,
                 jobs: true,

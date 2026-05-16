@@ -110,6 +110,16 @@ const JobsList = () => {
         syncWithLocation: userHasInteracted,
     });
 
+    
+    /* Quick Fixes
+    const { 
+        result: { data: QuickFixesData },
+        query: { refetch: refetchQuickFixes },
+    } = useList({
+        resource: "jobs/quick-fixes",
+        pagination: { mode: "off" }, 
+    });*/
+
     // Cache siteIds to avoid unnecessary re-renders and API calls when jobData changes
     const siteIds = useMemo(() => {
         const ids = jobData?.map((job) => job.siteId);
@@ -212,6 +222,30 @@ const JobsList = () => {
          
         setMessage("Show Recent New Jobs (last 2 weeks)");
     };
+
+     const handleQuickFixesFilter = () => {
+
+        setFilters([
+            {
+                field: "quickFixes",
+                operator: "eq",
+                value: "true",
+            },
+        ]);
+                
+        // Apply ascending sort
+        setSorters([
+            {
+                field: "createdAt",
+                order: "desc",
+            },
+        ]);
+                
+        setCurrentPage(1);
+        refetch();
+         
+        setMessage("Show Jobs has quick fixes (assets with more than 1 quick fixes)");
+    };
         
     // 1. Calculate the real page count
     const totalCount = total ?? 0;
@@ -236,6 +270,8 @@ const JobsList = () => {
             });
         
        }, [jobData, lastEditedJobId]);
+
+       console.log(allJobs, "allJobs")
     
     // First load to keep the URL params clean
     useEffect(() => {
@@ -357,7 +393,10 @@ const JobsList = () => {
                                         onClick={(e) => {
                                             e.preventDefault();
                                             setActiveTab("quick");
-                                    }}
+                                            setFilters([], "replace"); 
+
+                                            handleQuickFixesFilter();
+                                        }}
                                     >
                                         Quick Fixes
                                     </a>
@@ -368,6 +407,8 @@ const JobsList = () => {
                                         onClick={(e) => {
                                             e.preventDefault();
                                             setActiveTab("new");
+                                            setFilters([], "replace"); 
+
                                             handleNewJobsFilter();
                                         }}
                                     >
@@ -445,16 +486,24 @@ const JobsList = () => {
 
 
                         {   
-                            message && activeTab === "new" && (
+                            message && activeTab === "new" ? (
                                 <div className="cell small-12">
                                     <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>
                                         {
-                                            message.length === 0 ?<p>No new Jobs in the last 7 days</p> : <p>{message}</p>
+                                            <p>{message.length === 0 ? "No new Jobs in the last 7 days" : message}</p>
                                         }
                                     </div>
                                 </div>
                           
-                            )
+                            ) : message && activeTab === "quick" ? (
+                                <div className="cell small-12">
+                                    <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>  
+                                        {
+                                            <p>{message.length === 0 ? "No Jobs with quick fixes" : message}</p>
+                                        }
+                                    </div>
+                                </div>
+                            ) : null
                         }
                             
                         <div className="cell small-12">

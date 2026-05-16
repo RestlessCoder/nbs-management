@@ -1,23 +1,27 @@
 import { useTable, useParsed,  useGetIdentity, useList, CanAccess, useUpdate } from "@refinedev/core";
-import { type Sites } from "../../types";
+import type { Sites } from "../../types";
 import { formatNumber } from "../../utils"
 import { useEffect, useMemo, useState, type ChangeEvent } from "react"
 import { ResendVerification } from "../../components/ResendVerification";
 import EditModal from "../../components/EditModal";
 import { FALLBACK_LOCATIONS } from "../../constants";
+import { FavoriteButton } from "../../components/FavoriteButton";
 
 const SitesList = () => {   
     const { data: user } = useGetIdentity();
     const { params } = useParsed();
     const { mutateAsync } = useUpdate();
+
     const searchFromUrl = params?.search;
     const [filterValue, setFilterValue] = useState("");
     const [tableLoading, setTableLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState("all");
     const [userHasInteracted, setUserHasInteracted] = useState(false);
 
     const [showEdit, setShowEdit] = useState(false);
     const [selectedSite, setSelectedSite] = useState<Sites | null>(null);
     const [lastEditedSiteId, setLastEditedSiteId] = useState<number | null>(null);
+    const [showFavourites, setShowFavourites] = useState(false);
     
     const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -39,6 +43,7 @@ const SitesList = () => {
             closeEdit();
             setLastEditedSiteId(id);
             refetch();
+            refetchFavourites();
         } catch (err) {
             console.error("Error editing site:", err);
 
@@ -72,16 +77,8 @@ const SitesList = () => {
             initial: []
         },
         syncWithLocation: userHasInteracted,
+        meta: { favourited: showFavourites },
     });
-
-    // Identify which field is currently sorted to highlight the tab
-    const currentSortField = sorters?.[0]?.field as any;
-
-    const handleSortAction = (field: string) => {
-        const order = (field === "year" || field === "createdAt") ? "desc" : "asc";
-
-        setSorters([{ field, order }]);
-    };
 
      const handleBudgetChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -96,6 +93,15 @@ const SitesList = () => {
         }
     };
 
+    // All favourites
+    const { 
+        result: { data: favouritesData },
+        query: { refetch: refetchFavourites }
+    } = useList({
+        resource: "sites/favourites",
+        pagination: { mode: "off" }, 
+    });
+
 
     // 1. Calculate the real page count
     const totalCount = total ?? 0;
@@ -103,20 +109,21 @@ const SitesList = () => {
 
     // 2. Create an array [1, 2, 3...] for the buttons
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+    
 
     const allSites = useMemo(() => {
-           if (!siteData) return [];
+           if (!siteData || !favouritesData) return [];
            
-           const list = [...siteData];
+            const list = showFavourites ? [...(favouritesData ?? [])] : [...siteData];
 
-           // Move me to top logic
-           return list.sort((a, b) => {
-            if (a.id === lastEditedSiteId) return -1;
-            if (b.id === lastEditedSiteId) return 1;
-            return a.name.localeCompare(b.name); // or your default sort
+            // Move me to top logic
+            return list.sort((a, b) => {
+                if (a.id === lastEditedSiteId) return -1;
+                if (b.id === lastEditedSiteId) return 1;
+                return a.name.localeCompare(b.name); // or your default sort
+                
         });
-        
-       }, [siteData, lastEditedSiteId]);
+    }, [siteData, favouritesData, lastEditedSiteId, showFavourites]);
 
     // Get all locations
     const { 
@@ -195,7 +202,7 @@ const SitesList = () => {
     }
     , [isError]);
 
-
+    
     return (
         <>
             <div className="body-dashboard generic-padding bg--whiteSmoke">
@@ -203,16 +210,28 @@ const SitesList = () => {
                     <div className="grid-x grid-padding-x">
                         <div className="cell small-12 medium-8 large-9 mb--20">
                             <ul className="navigation__items">
-                                <li className={!currentSortField ? "is-active" : ""}>
+                                <li className={activeTab === "all" ? "is-active" : ""}>
                                     <a href="#" onClick={(e) => { 
                                         e.preventDefault(); 
-                                        handleSortAction("id"); 
+                                        setActiveTab("all");                                       
+                                        setFilters([], "replace"); 
+                                        setShowFavourites(false);
+
+                                        setCurrentPage(1);
+                                        refetch();
                                     }}>
                                         All Sites
                                     </a>
                                 </li>
-                                {/* To Do - Favourite functionality */}
-                                <li><a href="">My Favourites</a></li>
+                                <li className={activeTab === "favourites" ? "is-active" : ""}>
+                                    <a href="" onClick={(e) => { 
+                                        e.preventDefault(); 
+                                        setShowFavourites(true);
+                                        setActiveTab("favourites");
+                                    }}>
+                                        My Favourites
+                                    </a>
+                                </li>
                             </ul>                    
                         </div>
                         <div className="cell small-12 medium-4 large-3 text-right mb--20">
@@ -259,9 +278,16 @@ const SitesList = () => {
                                     </div>
                                 )
                             }
-                            
+
+                            {
+                                showFavourites && (favouritesData?.length === 0) &&
+                                    <p style={{ marginLeft: '0.65rem', marginTop: '1rem' }}>No favourites found. Try adding some!</p>
+                                
+                            }
+
                             {
                                 user?.isVerified === true && 
+
                                 <div className="sites-table">
                                     <table className="sites-table__content">
                                         <thead className="sites-table__header">
@@ -291,11 +317,10 @@ const SitesList = () => {
                                                 </tr>
                                             ))
                                         ) : (
-                                        
                                             allSites.map((site) => {
 
                                                 let colourStrClass = "";
-
+                                               
                                                 switch(site.category.toLowerCase()) {
                                                     case "gold": 
                                                         colourStrClass = "block--gold";
@@ -309,6 +334,7 @@ const SitesList = () => {
                                                     default: 
                                                         colourStrClass = "";
                                                 }
+                                                
 
                                                     return (
                                                         <tr key={site.id}>
@@ -332,10 +358,11 @@ const SitesList = () => {
                                                             </td>
                                                             <td className="sites-table__cell budget">&#163;{formatNumber(site.budget)}</td>
                                                             <td className="sites-table__cell action">
-                                                                {/* To Do List Favourite --> */}
-                                                                <button className="button-circle-icon button-favourite liked">
-                                                                    <i className="far fa-heart"></i>
-                                                                </button>
+                                                                <FavoriteButton 
+                                                                    siteId={site?.id as number} 
+                                                                    initialFavorite={site?.isFavorited} 
+                                                                    onToggled={refetchFavourites}
+                                                                />
                                                                 <CanAccess
                                                                     resource="sites"
                                                                     action="edit"
@@ -358,7 +385,7 @@ const SitesList = () => {
                                 </table>
 
                                                         
-                                {!tableLoading && totalCount > pageSize && 
+                                {!tableLoading && totalCount > pageSize && !showFavourites && 
                             
                                     <nav className="pagination-container">
                                         {/* Previous Button */}

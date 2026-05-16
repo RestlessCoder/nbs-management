@@ -54,6 +54,20 @@ const options: CreateDataProviderOptions = {
             return payload.data;
         },
     },
+    custom: {
+        buildHeaders: async ({ meta }) => {
+            return {
+                "Content-Type": "application/json",
+                ...(meta?.headers || {}),
+            };
+        },
+        mapResponse: async (response) => {
+            const clonedResponse = response.clone();
+            const payload = await clonedResponse.json();
+            console.log(payload.data);
+            return payload.data;
+        },
+    },
 }
 
 

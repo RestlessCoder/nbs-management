@@ -1,10 +1,11 @@
-import { Link, useList } from "@refinedev/core";
-import { useEffect, useState } from "react";
+import { Link, useGetIdentity, useList } from "@refinedev/core";
+import { useEffect, useMemo, useState } from "react";
 import { formatNumberUK } from "../utils";
 import StatusCardBlock from "../components/StatusCardBlock";
 
 const DashboardPage = () => {
 
+  const { data: user } = useGetIdentity<{ role: string; id: number, siteId: number }>();
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedSiteId, setSelectedSiteId] = useState("all");
   
@@ -37,6 +38,9 @@ const DashboardPage = () => {
   } = useList({
       resource: "dashboard/grouped-sites",
       pagination: { mode: "off" },
+      filters: user?.role === "USER" 
+        ? [{ field: "id", operator: "eq", value: user.siteId }] 
+        : [],
       queryOptions: {
           select: (result) => {
               const grouped = result.data.reduce((acc, site) => {
@@ -70,10 +74,19 @@ const DashboardPage = () => {
     }
 }, [isLoading]);
 
-  // Filter sites based on dropdown selection
-  const filteredSites = selectedSiteId === "all"
-    ? groupedSitesData
-    : groupedSitesData.filter(site => site.id === Number(selectedSiteId));
+  const filteredSites = useMemo(() => {
+    if (!groupedSitesData) return [];
+
+    if (user?.role === "ADMIN") {
+        return selectedSiteId === "all"
+            ? groupedSitesData
+            : groupedSitesData.filter(site => site.id === Number(selectedSiteId));
+    }
+
+    return groupedSitesData.filter(site => site.id === user?.siteId);
+
+  }, [groupedSitesData, selectedSiteId, user]);
+
 
   // Calculate totals for summary boxes
   const siteTotals = filteredSites.reduce((acc, site) => {
@@ -88,26 +101,38 @@ const DashboardPage = () => {
 
   const balance = siteTotals.budget - siteTotals.cost;
 
+  console.log(user)
   return (
     <div className="body-dashboard generic-padding bg--whiteSmoke">
       <div className="grid-x grid-padding-x">
         <div className="cell small-12 medium-12 xmedium-7 large-5 mb--24">
-            <form action="" id="site">
-                <select 
-                  className="site-select" 
-                  id="siteId"
-                  name="siteId"
-                  value={selectedSiteId}
-                  onChange={(e) => setSelectedSiteId(e.target.value)}
-                >
-                  <option value="all">All Sites</option>
-                  {allSitesName.map((site) => (
-                      <option key={site.id} value={site.id}>
-                          {site.name}
-                      </option>
-                  ))}
-              </select>
-            </form>          
+            {
+                user?.role === "ADMIN" ? (
+                  <select 
+                    className="site-select" 
+                    id="siteId"
+                    name="siteId"
+                    value={selectedSiteId}
+                    onChange={(e) => setSelectedSiteId(e.target.value)}
+                  >
+                    <option value="all">All Sites</option>
+                    {allSitesName.map((site) => (
+                        <option key={site.id} value={site.id}>
+                            {site.name}
+                        </option>
+                    ))}
+                </select>
+              ) : (
+                  <h1 className="dashboard-title">
+
+                      {
+                        user?.role === "USER" && 
+                          allSitesName.find(site => site.id === user.siteId)?.name 
+                      }
+                  </h1>
+              )
+            }
+              
         </div> 
       </div>
 

@@ -20,9 +20,10 @@ export type Sites = {
     category: string;
     createdAt: string;
     budget: number;
+    isFavorited?: boolean;
     jobs: Jobs[];
     assets: Assets[];
-    isFavorite: boolean;
+    favoritedBy: UserFavoriteSite[];
     updatedAt: string;
 }
 
@@ -39,6 +40,14 @@ export type Jobs = {
     quickFixes: number;
     createdAt: string;
 }
+
+export type UserFavoriteSite = {
+  id: number;
+  userId: number;
+  siteId: number;
+  site?: Sites;
+  user?: User;
+};
 
 export type ListResponse<T = unknown> = {
     data?: T[];
@@ -93,6 +102,12 @@ export type ListViewBlockProps = {
     editJob: (job: Jobs) => void;
     deleteJob: (job: Jobs) => void;
 }   
+
+export type FavoriteButtonProps = {
+    siteId: number;
+    initialFavorite: boolean;
+    onToggled?: () => void;
+}
 
 export type ReportFaultFormProps = {
     show: boolean;
