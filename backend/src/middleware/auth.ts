@@ -31,6 +31,7 @@ export const requireAuth = async (
         id: user.id,
         email: user.email,
         role: user.role as "ADMIN" | "USER",
+        siteId: user.siteId ?? 0,
         isVerified: user.isVerified,
       };
     
