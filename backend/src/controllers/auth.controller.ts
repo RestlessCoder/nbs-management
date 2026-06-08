@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
-import { sendPasswordResetEmail, sendVerificationEmail } from '../src/services/emailService';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../services/emailService';
 
 const cookieOptions = {
     httpOnly: true,

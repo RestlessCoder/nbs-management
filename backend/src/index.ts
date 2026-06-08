@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
-import assetsRouter from "./routes/assetsRoute.ts";
-import jobsRouter from "./routes/jobsRoute.ts";
-import siteRouter from "./routes/siteRoute.ts";
-import authRoutes from "./routes/authRoute.ts";
-import userRouter from "./routes/userRoute.ts";
-import dashboardRoutes from "./routes/dashboardRoute.ts";
+import assetsRouter from "./routes/assetsRoute";
+import jobsRouter from "./routes/jobsRoute";
+import siteRouter from "./routes/siteRoute";
+import authRoutes from "./routes/authRoute";
+import userRouter from "./routes/userRoute";
+import dashboardRoutes from "./routes/dashboardRoute";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -35,10 +35,10 @@ app.use("/api/sites", siteRouter);
 app.use("/api/jobs", jobsRouter);
 app.use("/api/assets", assetsRouter);
 
-/*app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server is running on port http://localhost:${PORT}`);
-}); */
+}); 
 
-export default (req : any, res : any) => {
+/*export default (req : any, res : any) => {
   app(req, res);
-};
+}; */

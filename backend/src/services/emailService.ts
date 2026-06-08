@@ -1,4 +1,3 @@
-import { asyncWrapProviders } from "node:async_hooks";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({

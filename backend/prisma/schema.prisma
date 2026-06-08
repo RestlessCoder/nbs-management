@@ -1,6 +1,5 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -122,7 +121,7 @@ enum Status {
 enum AssetType {
   CEILING
   LIGHTING
-  TOILER_ROLL_HODLDER
+  TOILET_ROLL_HODLDER
   SOAP_DISPENSER
   WALL
   KITCHEN_EXTRACTION_UNIT

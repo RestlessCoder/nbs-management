@@ -7,9 +7,9 @@ import {
   resendEmailVerification, 
   forgotPassword, 
   updatePassword
-} from "../../controllers/auth.controller.ts";
-import { requireAuth } from "../middleware/auth.ts";
-import { prisma } from "../../lib/prisma.ts";
+} from "../controllers/auth.controller";
+import { requireAuth } from "../middleware/auth";
+import { prisma } from "../lib/prisma";
 
 const router = express.Router();  
 

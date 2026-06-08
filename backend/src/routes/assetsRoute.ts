@@ -1,7 +1,7 @@
 import express from "express";
-import { prisma } from "../../lib/prisma.ts";
-import { requireAuth, requireRole } from "../middleware/auth.ts";
-import { AssetType } from "../../generated/prisma/enums.ts";
+import { prisma } from "../lib/prisma";
+import { requireAuth, requireRole } from "../middleware/auth";
+import { AssetType } from "@prisma/client";
 
 const router = express.Router();
 

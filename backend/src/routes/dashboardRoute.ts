@@ -1,5 +1,5 @@
-import express, { Request, Response } from "express";
-import { prisma } from "../../lib/prisma";
+import express from "express";
+import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 
 const router = express.Router();

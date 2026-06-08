@@ -1,7 +1,7 @@
 import express from "express";
-import { prisma } from "../../lib/prisma.ts";
-import { Status } from "../../generated/prisma/enums.ts";
-import { requireAuth, requireRole } from "../middleware/auth.ts";
+import { prisma } from "../lib/prisma";
+import { Status } from "@prisma/client";
+import { requireAuth, requireRole } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -100,16 +100,16 @@ router.post("/add-job", async (req, res) => {
 async function generateReference() {
     const lastJob = await prisma.job.findFirst({ orderBy: { reference: "desc" }, });
     // If no jobs yet, start at 100400
-    if (!lastJob) return 100400;
+        if (!lastJob) return 100400;
 
-    return lastJob.reference + 1;
-}
-  try {
-    const {
-      description,
-      siteId,
-      assetId,
-      quickFixes
+        return lastJob.reference + 1;
+    }
+    try {
+        const {
+        description,
+        siteId,
+        assetId,
+        quickFixes
     } = req.body;
 
     const reference = await generateReference();
@@ -118,9 +118,8 @@ async function generateReference() {
       data: {
         reference,
         description,  
-        siteId,      
+        siteId,
         assetId,     
-        quickFixes: Number(quickFixes) || 0, 
         cost: 0,
         status: Status.LOGGED_WITH_NBS
       },

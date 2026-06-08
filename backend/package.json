@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,16 +17,17 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.9.2",
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.20.0",
     "jest": "^30.3.0",
-    "prisma": "^6.19.3",
-    "tsx": "^4.21.0"
+    "prisma": "^7.8.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@prisma/adapter-neon": "^7.6.0",
-    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/adapter-neon": "^7.7.0",
+    "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
