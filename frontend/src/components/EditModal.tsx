@@ -4,7 +4,6 @@ import type { EditModalProps } from "../types";
 import { formatEnum, getOptionClass } from "../utils";
 
 const EditModal = ({ 
-    mode,
     show, 
     entity,
     fields,
