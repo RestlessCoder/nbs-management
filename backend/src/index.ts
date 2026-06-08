@@ -35,10 +35,13 @@ app.use("/api/sites", siteRouter);
 app.use("/api/jobs", jobsRouter);
 app.use("/api/assets", assetsRouter);
 
-/*app.listen(PORT, () => {
-    console.log(`Server is running on port http://localhost:${PORT}`);
-}); */
+// Only listen to port if running locally (Vercel handles routing automatically)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
 
-export default (req : any, res : any) => {
+/*export default (req : any, res : any) => {
   app(req, res);
-}; 
+}; */
