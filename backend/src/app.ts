@@ -42,6 +42,4 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-/*export default (req : any, res : any) => {
-  app(req, res);
-}; */
+export default app;
