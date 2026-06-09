@@ -1,5 +1,6 @@
 // express.d.ts gives you autocomplent(req.user.email) and type safefty (Indusry standard)
 
+export {};
 
 declare global {
   namespace Express {
@@ -9,4 +10,3 @@ declare global {
   }
 }
 
-export {};
