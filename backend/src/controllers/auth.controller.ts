@@ -7,13 +7,13 @@ import { sendPasswordResetEmail, sendVerificationEmail } from '../services/email
 const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "none" as const,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 const generateToken = (id: number, email: string, role: "ADMIN" | "USER", isVerified: boolean) => {
     return jwt.sign({id, email, role, isVerified }, process.env.JWT_SECRET as string, {
-        expiresIn: "7d",
+        expiresIn: process.env.NODE_ENV === "production" ? "7d" : "1h",
     });
 }
 
@@ -128,7 +128,7 @@ export const verifyEmail = async (
             email: updatedUser.email, 
             role: updatedUser.role, 
             isVerified: updatedUser.isVerified 
-        }, process.env.JWT_SECRET as string, { expiresIn: "15min" });
+        }, process.env.JWT_SECRET as string, { expiresIn: process.env.NODE_ENV === "production" ? "7d" : "1h" });
         
         res.cookie("token", verifyToken,  cookieOptions);
 
@@ -253,7 +253,7 @@ export const forgotPassword = async (
 
         if (!user) return res.status(404).json({ message: "Email not found" });
 
-        const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: "15min" });
+        const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET as string, { expiresIn: process.env.NODE_ENV === "production" ? "7d" : "1h" });
         
         user.resetPasswordToken = resetToken;
         user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes

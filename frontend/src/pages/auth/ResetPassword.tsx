@@ -6,7 +6,7 @@ import { useForm } from "@refinedev/react-hook-form";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import brandLogo from "../../assets/images/brand-logo.svg";
+import brandLogo from "@/assets/images/brand-logo.svg";
 import { Navigate, useLocation } from "react-router";
 
 

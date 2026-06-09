@@ -3,6 +3,9 @@ import type { User } from "../types";
 import { useParsed, useGo } from "@refinedev/core";
 import { capitalizeString } from "../utils";
 
+import userMan from "@/assets/images/user-man.svg";
+import userGirl from "@/assets/images/user-girl.svg";
+
 const TopSearchBar = ({ user } : { user: User }) => {
 
   const { params } = useParsed(); // read current query params
@@ -59,9 +62,7 @@ const TopSearchBar = ({ user } : { user: User }) => {
         <div className="user-details">
             <div className="user-details__image">
                 <img 
-                  src={user?.gender === "GUY" ? 
-                    `src/assets/images/user-man.svg` : 
-                    `src/assets/images/user-girl.svg`}
+                  src={user?.gender === "GUY" ? userMan : userGirl}
                   alt={user?.gender && user.gender.toLowerCase() || "user"} />
             </div>
             {user?.name && <span className="user-details__name">{user?.name.charAt(0).toUpperCase() + user?.name.slice(1) || ""}</span>}

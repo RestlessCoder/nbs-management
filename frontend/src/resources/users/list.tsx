@@ -6,6 +6,9 @@ import axios from "axios";
 import { type User } from "../../types";
 import EditModal from "../../components/EditModal";
 
+import userMan from "@/assets/images/user-man.svg";
+import userGirl from "@/assets/images/user-girl.svg";
+
 const UserList = () => {      
     const { data: user } = useGetIdentity();
     const { mutateAsync } = useUpdate();
@@ -217,7 +220,7 @@ const UserList = () => {
             <div className="body-dashboard generic-padding bg--whiteSmoke">
                 <section className="jobs-section table-container">
                     <div className="grid-x grid-padding-x">
-                        <div className="cell small-12 msmall-6 medium-6 large-8 mb--20">
+                        <div className="cell small-12 msmall-12 medium-4 mb--20">
                             <ul className="navigation__items">
                                 <li className="is-active"><a href="">All Users</a></li>
                             </ul>
@@ -226,17 +229,17 @@ const UserList = () => {
                             resource="users"
                             action="create"
                             >
-                            <div className="cell small-12 msmall-6 medium-6 large-4 text-right mb--20 text-left--xsmall">
+                            <div className="cell small-12 msmall-12 medium-8 text-right mb--20 text-left--small">
                                 <Link 
                                     to="/register" 
-                                    className="btn new-users btn--primary"
+                                    className="btn new-users btn--primary mb--8"
                                     target="_blank" rel="noopener noreferrer"
                                 >
                                     New User
                                 </Link>
                                 <Link 
                                     to="/forgot-password" 
-                                    className="btn new-users btn--black ml--12"
+                                    className="btn new-users btn--primary ml--12"
                                 >
                                     User Reset Password
                                 </Link>
@@ -311,9 +314,7 @@ const UserList = () => {
                                                                 <td className="users-table__cell user">
                                                                     <span className="user-image">
                                                                         <img 
-                                                                            src={user?.gender === "GUY" ? 
-                                                                                `src/assets/images/user-man.svg` : 
-                                                                                `src/assets/images/user-girl.svg`}
+                                                                            src={user?.gender === "GUY" ? userMan : userGirl}
                                                                             alt={user?.gender && user.gender.toLowerCase() || "user"} />
                                                                     </span>
                                                                     <span className="user-name">

@@ -1,6 +1,10 @@
 import { useMenu, useLogout } from "@refinedev/core";
 import { Link } from "react-router";
 import { useState } from "react";
+import brandLogo from "@/assets/images/brand-logo.svg";
+import whiteBrandLogo from "@/assets/images/white-brand-logo.svg";
+import nbsLogo from "@/assets/images/nbs-logo.svg";
+import nbsWhiteLogo from "@/assets/images/nbs-white-logo.svg"
 
 
 const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
@@ -22,7 +26,7 @@ const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
                 <div className={`sidebar-dashboard ${isLightMode ? "light" : ""}`}>
                     <div className="main-logo">
                         <img className="main-logo-image" 
-                            src={isLightMode ? "src/assets/images/brand-logo.svg" : "src/assets/images/white-brand-logo.svg"} 
+                            src={isLightMode ? brandLogo : whiteBrandLogo} 
                         alt="brand logo white" />
                     </div>
                     <span className="border-inbetween"></span>
@@ -77,7 +81,7 @@ const SidebarNav = ({ onOpenReportForm }: { onOpenReportForm: () => void }) => {
                         <span className="brand-logo">
                             <img 
                                 className="brand-logo-image" 
-                                src={isLightMode ? "src/assets/images/nbs-logo.svg" : "src/assets/images/nbs-white-logo.svg"} 
+                                src={isLightMode ? nbsLogo : nbsWhiteLogo} 
                                 alt="brand logo" />
                         </span>
                     </div>

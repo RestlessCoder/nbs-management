@@ -1,5 +1,5 @@
-import bgRedImage from "../../assets/images/red-bg.png";
-import brandLogo from "../../assets/images/brand-logo.svg";
+import bgRedImage from "@/assets/images/red-bg.png";
+import brandLogo from "@/assets/images/brand-logo.svg";
 import { GridIcon, ListIcon, BoltIcon, UsersIcon } from "../../assets/images";
 import { useLogin } from "@refinedev/core";
 import { useEffect, useRef, useState } from "react";

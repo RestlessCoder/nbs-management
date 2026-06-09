@@ -150,7 +150,7 @@ const DashboardPage = () => {
                       )}                      
                     </span>
                     <span className="logo">
-                      <img src="./src/assets/images/icons/list-red-icon.svg" alt="icon" />
+                      <img src="@/assets/images/icons/list-red-icon.svg" alt="icon" />
                     </span>  
                   </div>
                   <p className="description">Ongoing Jobs</p>
@@ -179,7 +179,7 @@ const DashboardPage = () => {
                       )}   
                     </span>
                     <span className="logo">
-                      <img src="./src/assets/images/icons/time-red-icon.svg" alt="icon" />
+                      <img src="@assets/images/icons/time-red-icon.svg" alt="icon" />
                     </span>  
                   </div>
                   <p className="description">Quick Fixes</p>
