@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.3.1",
     "@hookform/resolvers": "^5.2.2",
     "@refinedev/core": "^5.0.11",
     "@refinedev/react-hook-form": "^5.0.4",
