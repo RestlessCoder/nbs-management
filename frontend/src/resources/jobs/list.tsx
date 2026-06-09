@@ -271,7 +271,7 @@ const JobsList = () => {
         
        }, [jobData, lastEditedJobId]);
 
-       console.log(allJobs, "allJobs")
+       //console.log(allJobs, "allJobs")
     
     // First load to keep the URL params clean
     useEffect(() => {

@@ -147,7 +147,6 @@ const AssetsList = () => {
         return [...new Set([...years, ...FALLBACK_YEARS])].sort((a, b) => a - b);
     }, [optionsAssetsData]);
 
-    console.log("optionsAssetsData", optionsAssetsData);
     const uniqueTypes = useMemo(() => {
     const types = optionsAssetsData?.map((a) => a.type.toUpperCase()).filter(Boolean) ?? [];
         const fallbackTypes = FALLBACK_ASSET_TYPES.map(t => t.toUpperCase());
@@ -159,7 +158,6 @@ const AssetsList = () => {
     const allYears = uniqueYears;
     const allTypes = uniqueTypes;
 
-    console.log("all types", allTypes);
     
     const handleYearChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;

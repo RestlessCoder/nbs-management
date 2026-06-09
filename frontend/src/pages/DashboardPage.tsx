@@ -2,6 +2,9 @@ import { Link, useGetIdentity, useList } from "@refinedev/core";
 import { useEffect, useMemo, useState } from "react";
 import { formatNumberUK } from "../utils";
 import StatusCardBlock from "../components/StatusCardBlock";
+import listRedIcon  from "@/assets/images/icons/list-red-icon.svg";
+import boltRedIcon  from "@/assets/images/icons/bolt-red-icon.svg";
+import timeRedIcon  from "@/assets/images/icons/time-red-icon.svg";
 
 const DashboardPage = () => {
 
@@ -87,7 +90,7 @@ const DashboardPage = () => {
 
   }, [groupedSitesData, selectedSiteId, user]);
 
-  console.log("filteredSites", filteredSites);
+  //console.log("filteredSites", filteredSites);
 
   // Calculate totals for summary boxes
   const siteTotals = filteredSites.reduce((acc, site) => {
@@ -150,7 +153,7 @@ const DashboardPage = () => {
                       )}                      
                     </span>
                     <span className="logo">
-                      <img src="@/assets/images/icons/list-red-icon.svg" alt="icon" />
+                      <img src={listRedIcon} alt="icon" />
                     </span>  
                   </div>
                   <p className="description">Ongoing Jobs</p>
@@ -179,7 +182,7 @@ const DashboardPage = () => {
                       )}   
                     </span>
                     <span className="logo">
-                      <img src="@assets/images/icons/time-red-icon.svg" alt="icon" />
+                      <img src={timeRedIcon} alt="icon" />
                     </span>  
                   </div>
                   <p className="description">Quick Fixes</p>
@@ -205,7 +208,7 @@ const DashboardPage = () => {
                       )}
                     </span>
                     <span className="logo">
-                      <img src="./src/assets/images/icons/bolt-red-icon.svg" alt="icon" />
+                      <img src={boltRedIcon} alt="icon" />
                     </span>  
                   </div>
                   <p className="description">Assets</p>

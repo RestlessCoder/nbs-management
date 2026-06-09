@@ -64,7 +64,7 @@ const options: CreateDataProviderOptions = {
         mapResponse: async (response) => {
             const clonedResponse = response.clone();
             const payload = await clonedResponse.json();
-            console.log(payload.data);
+            //console.log(payload.data);
             return payload.data;
         },
     },
