@@ -555,7 +555,8 @@ html, body {
   background-image: url(../src/assets/images/square-arrow-down.svg);
 }
 
-.table-container .filter-form-select .filter-select--min-width150 {
+
+.table-container .filter-form-select .filter-select {
   background-image: url(../src/assets/images/square-arrow-down.svg);
 }
 
