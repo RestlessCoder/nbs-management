@@ -13,7 +13,7 @@ const ResendVerification = ({
         try {
             const response = await axios.post(endpoint, {}, { withCredentials: true });
             
-            //console.log("Resend response:", response.data);
+            return response.data;
            
         } catch (error) {
             console.error("Error resending verification email:", error);
