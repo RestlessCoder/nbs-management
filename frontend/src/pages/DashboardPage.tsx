@@ -5,6 +5,7 @@ import StatusCardBlock from "../components/StatusCardBlock";
 import listRedIcon  from "@/assets/images/icons/list-red-icon.svg";
 import boltRedIcon  from "@/assets/images/icons/bolt-red-icon.svg";
 import timeRedIcon  from "@/assets/images/icons/time-red-icon.svg";
+import squareArrowDown from "@/assets/images/square-arrow-down.svg";
 
 const DashboardPage = () => {
 
@@ -100,7 +101,6 @@ const DashboardPage = () => {
     acc.quickFixes += site.assets.reduce((sum: number, assets: { quickFixes: number; }) => sum + (assets.quickFixes || 0), 0);
     acc.cost += site.jobs.reduce((sum: number, job: { cost: number; }) => sum + (job.cost || 0), 0);
     
-    console.log(acc)
     return acc;
   }, { totalAssets: 0, totalJobs: 0, budget: 0, quickFixes: 0, cost: 0 });
 
@@ -114,6 +114,7 @@ const DashboardPage = () => {
                 user?.role === "ADMIN" ? (
                   <select 
                     className="site-select" 
+                    style={{ backgroundImage: `url(${squareArrowDown})` }}
                     id="siteId"
                     name="siteId"
                     value={selectedSiteId}

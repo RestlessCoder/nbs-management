@@ -6,6 +6,7 @@ import { ResendVerification } from "../../components/ResendVerification";
 import EditModal from "../../components/EditModal";
 import { FALLBACK_LOCATIONS } from "../../constants";
 import { FavoriteButton } from "../../components/FavoriteButton";
+import { squareArrowDown } from "@/assets/images/square-arrow-down.svg";
 
 const SitesList = () => {   
     const { data: user } = useGetIdentity();
@@ -239,6 +240,7 @@ const SitesList = () => {
                                 <form id="filter">
                                     <select 
                                         className="filter-select filter-select--min-width195" 
+                                        style={{ backgroundImage: `url(${squareArrowDown})` }}
                                         name="filter"
                                         value={filterValue}
                                         onChange={handleBudgetChange}

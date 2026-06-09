@@ -3,6 +3,7 @@ import { type Assets } from "../../types";
 import { DynamicNavFilter } from "../../components/DynamicNavFilter.tsx";
 import { CanAccess, useList, useMany, useParsed, useTable, useUpdate } from "@refinedev/core";
 import { formatEnum } from "../../utils/index.ts";
+import squareArrowDown from "@/assets/images/square-arrow-down.svg";
 
 import EditModal from "../../components/EditModal";
 import DeleteModal from "../../components/DeleteModal.tsx";
@@ -268,6 +269,7 @@ const AssetsList = () => {
                                 <form id="filter">
                                     <select 
                                         className="filter-select filter-select--min-width150" 
+                                        style={{ backgroundImage: `url(${squareArrowDown})` }}
                                         name="filter"
                                         value={filterValue}
                                         onChange={handleYearChange}
