@@ -6,7 +6,7 @@ import { ResendVerification } from "../../components/ResendVerification";
 import EditModal from "../../components/EditModal";
 import { FALLBACK_LOCATIONS } from "../../constants";
 import { FavoriteButton } from "../../components/FavoriteButton";
-import { squareArrowDown } from "@/assets/images/square-arrow-down.svg";
+import squareArrowDown from "@/assets/images/square-arrow-down.svg";
 
 const SitesList = () => {   
     const { data: user } = useGetIdentity();
