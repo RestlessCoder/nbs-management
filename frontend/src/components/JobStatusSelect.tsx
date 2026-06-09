@@ -1,6 +1,5 @@
 import { formatEnum, getOptionClass } from "../utils";
 import { type JobStatusSelectProps } from "../types";
-import squareArrowDown from "@/assets/images/square-arrow-down.svg";
 
 const JobStatusSelect = ({ 
     job, 
@@ -12,8 +11,7 @@ const JobStatusSelect = ({
   return (
     <select 
       name="status"
-      className={`custom-select custom-select--status ${getOptionClass(String(job.status))}`} // color applied to select itself
-      style={{ backgroundImage: `url(${squareArrowDown})` }}
+      className={`custom-select custom-select--status ${getOptionClass(String(job.status))}`} 
       value={job.status}
       onChange={(e) => onChange?.(e.target.value)} 
       disabled={!canEdit}

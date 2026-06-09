@@ -3,7 +3,6 @@ import { CanAccess, useGetIdentity, useList, useMany, useParsed, useTable, useUp
 import type { Assets, Jobs, Sites } from "../../types";
 import { ResendVerification } from "../../components/ResendVerification";
 import JobStatusSelect from "../../components/JobStatusSelect";
-import squareArrowDown from "@/assets/images/square-arrow-down.svg";
 
 import EditModal from "../../components/EditModal.tsx";
 import DeleteModal from "../../components/DeleteModal.tsx";
@@ -445,7 +444,6 @@ const JobsList = () => {
                                 <form id="filter">
                                     <select 
                                         className="filter-select filter-select--min-width195" 
-                                        style={{ backgroundImage: `url(${squareArrowDown})` }}
                                         name="filter"
                                         value={filterValue}
                                         onChange={handleCostChange}

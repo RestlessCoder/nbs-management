@@ -543,6 +543,22 @@ html, body {
 }
 
 
+.body-dashboard .site-select { 
+  background-image: url(../src/assets/images/square-arrow-down.svg);
+}
+
+.report .report-label select {
+  background-image: url(../src/assets/images/square-arrow-down.svg);
+}
+
+.report .report-label select {
+  background-image: url(../src/assets/images/square-arrow-down.svg);
+}
+
+.table-container .filter-form-select .filter-select--min-width150 {
+  background-image: url(../src/assets/images/square-arrow-down.svg);
+}
+
 @media screen and (max-width: 89.9988em) {
     .top-dashboard-bar .user-details {
         width:35%;

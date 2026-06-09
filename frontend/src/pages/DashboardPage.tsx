@@ -5,7 +5,6 @@ import StatusCardBlock from "../components/StatusCardBlock";
 import listRedIcon  from "@/assets/images/icons/list-red-icon.svg";
 import boltRedIcon  from "@/assets/images/icons/bolt-red-icon.svg";
 import timeRedIcon  from "@/assets/images/icons/time-red-icon.svg";
-import squareArrowDown from "@/assets/images/square-arrow-down.svg";
 
 const DashboardPage = () => {
 
@@ -114,7 +113,6 @@ const DashboardPage = () => {
                 user?.role === "ADMIN" ? (
                   <select 
                     className="site-select" 
-                    style={{ backgroundImage: `url(${squareArrowDown})` }}
                     id="siteId"
                     name="siteId"
                     value={selectedSiteId}
