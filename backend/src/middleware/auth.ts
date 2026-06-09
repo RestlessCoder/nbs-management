@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import "../express.d.ts"; 
 import { prisma } from "../lib/prisma";
 
 // Middleware to protect routes and get user info from token
