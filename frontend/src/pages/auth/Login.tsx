@@ -2,7 +2,7 @@ import bgRedImage from "../../assets/images/red-bg.png";
 import brandLogo from "../../assets/images/brand-logo.svg";
 import { GridIcon, ListIcon, BoltIcon, UsersIcon } from "../../assets/images";
 import { useLogin } from "@refinedev/core";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "@refinedev/react-hook-form";
 import { LoginSchema, type LoginFormValues } from "../../lib/validation";
@@ -17,6 +17,21 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    const tooltipRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+            setShowTooltip(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const location = useLocation();
     const registered = new URLSearchParams(location.search).get("registered");
@@ -150,8 +165,51 @@ const LoginPage = () => {
                                         {isLoading ? "Signing in..." : "Sign In"}
                                     </button>
                                 </form>
-                
-                                <div className="forget-login">Forgot your log in?<a href="">Contact adminstrator.</a></div>
+                                <div ref={tooltipRef} style={{ position: 'relative', display: 'inline-block', paddingTop: '1.325rem' }}>
+                                    <span
+                                        style={{ color: '#007bff', cursor: 'pointer', textDecoration: 'underline dotted', fontSize: '1rem', fontWeight: '400' }}
+                                        onClick={() => setShowTooltip(!showTooltip)}
+                                    >
+                                        View for Demo credentials
+                                    </span>
+
+                                    {showTooltip && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '125%',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            backgroundColor: '#1a1a1a',
+                                            color: '#fff',
+                                            padding: '0.75rem 1rem',
+                                            borderRadius: '8px',
+                                            whiteSpace: 'nowrap',
+                                            zIndex: 10,
+                                            fontSize: '0.85rem',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                                        }}>
+                                        <strong>Email:</strong> admin@hotmail.com <br />
+                                        <strong>Password:</strong> AdminPass123 <br />
+                                        <span style={{ color: '#aaa', fontSize: '0.78rem' }}>
+                                            Admin only — create new users & resets passwords.
+                                        </span>
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '-6px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 0,
+                                            borderLeft: '6px solid transparent',
+                                            borderRight: '6px solid transparent',
+                                            borderBottom: '6px solid #1a1a1a'
+                                        }} />
+                                        </div>
+                                    )}
+                                </div>
+                                
+            
+                                <div className="forget-login" style={{ marginTop: '1.15rem' }}>Forgot your log in?<a href="">Contact adminstrator.</a></div>
                             </div>
                             
                             <div className="copyright-login">

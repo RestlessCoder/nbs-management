@@ -26,10 +26,9 @@ const DynamicNavFilter = ({
 
     //console.log(dbColumnsFilters)
     
-
     return (
         <ul className="navigation__items">
-            <li className={!activeValue ? "is-active" : ""}>
+            <li className={activeValue === "id" ? "is-active" : ""}>
                 <a href="#" onClick={(e) => { 
                     e.preventDefault(); 
                     onSortChange?.("id"); 
@@ -39,7 +38,7 @@ const DynamicNavFilter = ({
             </li>
             {dbColumnsFilters.map((item) => (
                 
-                <li key={item}>
+                <li key={item} className={activeValue === item ? "is-active" : ""}>
                      <a href="#"
                         onClick={(e) => {
                             e.preventDefault(); 

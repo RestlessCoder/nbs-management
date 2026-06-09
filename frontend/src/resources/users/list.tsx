@@ -234,6 +234,12 @@ const UserList = () => {
                                 >
                                     New User
                                 </Link>
+                                <Link 
+                                    to="/forgot-password" 
+                                    className="btn new-users btn--black ml--12"
+                                >
+                                    User Reset Password
+                                </Link>
                             </div>
                         </CanAccess>
                     </div> 

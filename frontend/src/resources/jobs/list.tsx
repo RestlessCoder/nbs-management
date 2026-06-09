@@ -462,49 +462,51 @@ const JobsList = () => {
                     </div>
 
                     <div className="grid-x grid-padding-x">
-                        {isError && (
-                                <div className="error-badge-container">
-                                    <div className="error-badge">
-                                        <p>Warning: Could not load site information. {error?.message}</p>
-                                        <button className="btn-retry" onClick={() => refetch()}>Retry Connection</button>
+                        <div className="cell small-12">
+                            {isError && (
+                                    <div className="error-badge-container">
+                                        <div className="error-badge">
+                                            <p>Warning: Could not load site information. {error?.message}</p>
+                                            <button className="btn-retry" onClick={() => refetch()}>Retry Connection</button>
+                                        </div>
                                     </div>
-                                </div>
-                        )}
+                            )}
 
-                        {
-                            user?.isVerified === false && (
-                                <div className="error-badge-container">
-                                    <div className="error-badge">   
-                                        <p>
-                                            Your email is not verified. Please check your inbox for the verification email. 
-                                            <ResendVerification />
-                                        </p>
+                            {
+                                user?.isVerified === false && (
+                                    <div className="error-badge-container">
+                                        <div className="error-badge">   
+                                            <p>
+                                                Your email is not verified. Please check your inbox for the verification email. 
+                                                <ResendVerification />
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            )
-                        }
+                                )
+                            }
 
 
-                        {   
-                            message && activeTab === "new" ? (
-                                <div className="cell small-12">
-                                    <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>
-                                        {
-                                            <p>{message.length === 0 ? "No new Jobs in the last 7 days" : message}</p>
-                                        }
+                            {   
+                                message && activeTab === "new" ? (
+                                    <div className="cell small-12">
+                                        <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>
+                                            {
+                                                <p>{message.length === 0 ? "No new Jobs in the last 7 days" : message}</p>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                          
-                            ) : message && activeTab === "quick" ? (
-                                <div className="cell small-12">
-                                    <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>  
-                                        {
-                                            <p>{message.length === 0 ? "No Jobs with quick fixes" : message}</p>
-                                        }
+                            
+                                ) : message && activeTab === "quick" ? (
+                                    <div className="cell small-12">
+                                        <div style={{marginLeft: "0.65rem", marginTop: "0.5rem"}}>  
+                                            {
+                                                <p>{message.length === 0 ? "No Jobs with quick fixes" : message}</p>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            ) : null
-                        }
+                                ) : null
+                            }
+                        </div>
                             
                         <div className="cell small-12">
                             {

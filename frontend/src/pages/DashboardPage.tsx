@@ -87,21 +87,22 @@ const DashboardPage = () => {
 
   }, [groupedSitesData, selectedSiteId, user]);
 
+  console.log("filteredSites", filteredSites);
 
   // Calculate totals for summary boxes
   const siteTotals = filteredSites.reduce((acc, site) => {
     acc.totalAssets += site.assets.length;
     acc.totalJobs += site.jobs.length;
     acc.budget += site.budget || 0;
-    acc.quickFixes += site.jobs.reduce((sum: number, job: { quickFixes: number; }) => sum + (job.quickFixes || 0), 0);
+    acc.quickFixes += site.assets.reduce((sum: number, assets: { quickFixes: number; }) => sum + (assets.quickFixes || 0), 0);
     acc.cost += site.jobs.reduce((sum: number, job: { cost: number; }) => sum + (job.cost || 0), 0);
     
+    console.log(acc)
     return acc;
   }, { totalAssets: 0, totalJobs: 0, budget: 0, quickFixes: 0, cost: 0 });
 
   const balance = siteTotals.budget - siteTotals.cost;
 
-  console.log(user)
   return (
     <div className="body-dashboard generic-padding bg--whiteSmoke">
       <div className="grid-x grid-padding-x">
@@ -186,7 +187,7 @@ const DashboardPage = () => {
               <span className="box-container-border-inbetween"></span>
               <div className="box-container__bottom">
                 <div className="links">
-                  <a href="">View Quick Fixes<i className="fa fa-chevron-right icon"></i></a>
+                  <a href="/assets">View Quick Fixes<i className="fa fa-chevron-right icon"></i></a>
                 </div>
               </div>
             </div>
